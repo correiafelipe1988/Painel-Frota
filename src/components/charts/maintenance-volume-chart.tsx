@@ -1,4 +1,3 @@
-
 "use client"
 
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts"
@@ -54,7 +53,7 @@ export function MaintenanceVolumeChart({ data }: { data: ChartDataPoint[] | null
               cursor={{ fill: 'hsl(var(--accent) / 0.1)' }}
               content={<ChartTooltipContent indicator="dot" />}
             />
-            <Bar dataKey="count" nameKey="Manutenção" fill="var(--color-count)" radius={[2, 2, 0, 0]} barSize={12} />
+            <Bar dataKey="count" fill="var(--color-count)" radius={[2, 2, 0, 0]} barSize={12} />
           </BarChart>
         </ResponsiveContainer>
       </ChartContainer>

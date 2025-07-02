@@ -32,16 +32,16 @@ const statusOptions: { value: MotorcycleStatus | 'all'; label: string }[] = [
   { value: 'indisponivel_emplacamento', label: 'Indisponível Emplacamento' },
 ];
 
-// Mock data for models, replace with actual data source if available
+// Model options matching the add motorcycle form
 const modelOptions: { value: string; label: string }[] = [
   { value: 'all', label: 'Todos os Modelos' },
-  { value: 'XTZ 150 Crosser', label: 'XTZ 150 Crosser' },
-  { value: 'CG 160 Titan', label: 'CG 160 Titan' },
-  { value: 'NMAX 160', label: 'NMAX 160' },
-  { value: 'PCX 150', label: 'PCX 150' },
-  { value: 'Factor 150', label: 'Factor 150' },
-  { value: 'Biz 125', label: 'Biz 125' },
-  { value: 'Honda Pop 110i', label: 'Honda Pop 110i' },
+  { value: 'SHINERAY SHI 175 CARBURADA', label: 'SHINERAY SHI 175 CARBURADA' },
+  { value: 'SHINERAY SHI 175 INJETADA', label: 'SHINERAY SHI 175 INJETADA' },
+  { value: 'DAFRA NH190', label: 'DAFRA NH190' },
+  { value: 'HAOJUE DK 150', label: 'HAOJUE DK 150' },
+  { value: 'HAOJUE DK160', label: 'HAOJUE DK160' },
+  { value: 'SHINERAY XY150', label: 'SHINERAY XY150' },
+  { value: 'YAMAHA FACTOR 150', label: 'YAMAHA FACTOR 150' },
 ];
 
 export function MotorcycleFilters({ onFilterChange, initialFilters }: MotorcycleFiltersProps) {

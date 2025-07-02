@@ -13,6 +13,7 @@ export interface Motorcycle {
   tempo_ocioso_dias?: number;
   qrCodeUrl?: string;
   valorSemanal?: number;
+  caucao?: number; // Valor da caução
   contagemPausada?: boolean;
   dias_ociosos_congelados?: number; // Dias ociosos no momento que entrou em manutenção
 }
@@ -25,6 +26,9 @@ export type Kpi = {
   color?: string;
   iconBgColor?: string;
   iconColor?: string;
+  titleClassName?: string;
+  valueClassName?: string;
+  descriptionClassName?: string;
 };
 
 export type ChartDataPoint = {
@@ -50,4 +54,18 @@ export interface StatusRapidoItem {
   badgeTextColor: string;
   statusKey?: MotorcycleStatus;
   icon: React.ElementType;
+}
+
+export interface RastreadorData {
+  id?: string;
+  cnpj: string;
+  empresa: string;
+  franqueado: string;
+  chassi: string;
+  placa: string;
+  rastreador: string;
+  tipo: string;
+  moto: string;
+  mes: string;
+  valor: string;
 }

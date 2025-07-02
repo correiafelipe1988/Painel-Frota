@@ -56,6 +56,7 @@ const motorcycleModelOptions = [
   { value: 'HAOJUE DK 150', label: 'HAOJUE DK 150' },
   { value: 'HAOJUE DK160', label: 'HAOJUE DK160' },
   { value: 'SHINERAY XY150', label: 'SHINERAY XY150' },
+  { value: 'YAMAHA FACTOR 150', label: 'YAMAHA FACTOR 150' },
 ];
 
 const formSchema = z.object({
@@ -64,6 +65,7 @@ const formSchema = z.object({
   type: z.enum(['nova', 'usada']).optional(),
   status: z.enum(['active', 'inadimplente', 'recolhida', 'relocada', 'manutencao', 'alugada', 'indisponivel_rastreador', 'indisponivel_emplacamento']).optional(),
   valorSemanal: z.coerce.number().positive("O valor semanal deve ser positivo.").optional().or(z.literal('')),
+  caucao: z.coerce.number().positive("O valor da caução deve ser positivo.").optional().or(z.literal('')),
   data_ultima_mov: z.date().optional(),
   tempo_ocioso_dias: z.coerce.number().min(0, "Os dias parado não podem ser negativos.").optional().or(z.literal('')),
   franqueado: z.string().optional(),
@@ -78,6 +80,7 @@ const defaultFormValues: FormValues = {
   type: undefined,
   status: undefined,
   valorSemanal: undefined,
+  caucao: undefined,
   data_ultima_mov: undefined,
   tempo_ocioso_dias: undefined,
   franqueado: "",
@@ -104,6 +107,7 @@ export function AddMotorcycleForm({ onSubmit, onCancel, initialData }: AddMotorc
         type: initialData.type || undefined,
         status: initialData.status || undefined,
         valorSemanal: initialData.valorSemanal !== undefined ? initialData.valorSemanal : '',
+        caucao: initialData.caucao !== undefined ? initialData.caucao : '',
         // Convert string date from initialData to Date object for the calendar
         data_ultima_mov: initialData.data_ultima_mov && isValid(parseISO(initialData.data_ultima_mov)) ? parseISO(initialData.data_ultima_mov) : undefined,
         tempo_ocioso_dias: initialData.tempo_ocioso_dias !== undefined ? initialData.tempo_ocioso_dias : '',
@@ -124,6 +128,7 @@ export function AddMotorcycleForm({ onSubmit, onCancel, initialData }: AddMotorc
       type: values.type || undefined,
       status: values.status || undefined,
       valorSemanal: values.valorSemanal ? parseFloat(String(values.valorSemanal)) : undefined,
+      caucao: values.caucao ? parseFloat(String(values.caucao)) : undefined,
       data_criacao: initialData?.data_criacao || new Date().toISOString(), // Preserve original or set new creation date
       data_ultima_mov: values.data_ultima_mov && isValid(values.data_ultima_mov) ? format(values.data_ultima_mov, "yyyy-MM-dd") : undefined,
       tempo_ocioso_dias: values.tempo_ocioso_dias ? parseInt(String(values.tempo_ocioso_dias), 10) : undefined,
@@ -242,6 +247,23 @@ export function AddMotorcycleForm({ onSubmit, onCancel, initialData }: AddMotorc
                 </FormItem>
               )}
             />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="caucao"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Caução (R$)</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="Ex: 1500.00" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} value={field.value === undefined || field.value === null ? '' : field.value} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div></div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

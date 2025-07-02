@@ -9,8 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-import type { Motorcycle } from "@/lib/types"; // Assuming Motorcycle type exists
-import { fetchMotorcyclesByFranchiseeAndDateRange, subscribeToMotorcycles, MotorcycleStatus } from "@/lib/firebase/motorcycleService";
+import { fetchMotorcyclesByFranchiseeAndDateRange, subscribeToMotorcycles } from "@/lib/firebase/motorcycleService";
+import type { Motorcycle, MotorcycleStatus } from "@/lib/types";
 
 export default function ResumoFranqueadoPage() {
   const [selectedFranchisee, setSelectedFranchisee] = useState<string>("");

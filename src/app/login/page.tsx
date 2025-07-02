@@ -18,7 +18,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn, user, loading } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,14 +26,39 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
+      console.log('Attempting login...');
       await signIn(email, password);
-      router.push('/dashboard');
+      console.log('Login successful, redirecting...');
+      
+      // Aguardar um pouco para garantir que o estado foi atualizado
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 500);
+      
     } catch (error) {
       console.error('Erro no login:', error);
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Se estiver carregando, mostrar loading
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Se já estiver logado, redirecionar
+  if (user) {
+    router.push('/dashboard');
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center p-4">
@@ -43,15 +68,16 @@ export default function LoginPage() {
           <div className="flex justify-center items-center space-x-3">
             <div className="flex items-center space-x-3">
               <Image
-                src="https://i.postimg.cc/BQRfDrj9/GO-removebg-preview-2.png"
+                src="https://i.postimg.cc/vTxkND9h/GO-removebg-preview-2.png"
                 alt="GO Logo"
                 width={64}
                 height={64}
                 className="object-contain"
                 priority
+                unoptimized
               />
               <div className="text-left">
-                <h1 className="text-2xl font-bold text-primary">Master Salvador</h1>
+                <h1 className="text-2xl font-bold text-primary">Master Porto Alegre</h1>
                 <p className="text-sm text-muted-foreground">Gestão de Locação</p>
               </div>
             </div>
@@ -172,7 +198,7 @@ export default function LoginPage() {
             <span className="text-xs">Sistema de Gestão de Motocicletas</span>
           </div>
           <p className="text-xs text-muted-foreground/70">
-            © 2024 Master Salvador - Todos os direitos reservados
+            © 2024 Master Porto Alegre - Todos os direitos reservados
           </p>
         </div>
       </div>

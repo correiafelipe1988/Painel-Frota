@@ -1,4 +1,3 @@
-
 "use client"
 
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts"
@@ -73,7 +72,7 @@ export function StatusDistributionChart({ data }: { data: StatusDistributionPieD
    const legendPayload = data.map(item => ({
     value: item.name, // The label for the legend item
     color: item.fill, // The color for the legend item
-    type: 'square', // Optional: shape of the legend icon
+    type: 'square' as const, // shape of the legend icon, now typed
   }));
 
 
@@ -113,4 +112,3 @@ export function StatusDistributionChart({ data }: { data: StatusDistributionPieD
   )
 }
 
-    

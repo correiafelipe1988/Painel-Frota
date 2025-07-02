@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "motosight-dashboard"
-  }
+    "default": "painel-locagora-master"
+  },
+  "targets": {},
+  "etags": {}
 }

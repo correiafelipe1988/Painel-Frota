@@ -15,18 +15,31 @@ export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [isChecking, setIsChecking] = useState(true);
+  const [hasRedirected, setHasRedirected] = useState(false);
 
   useEffect(() => {
+    // console.log('ProtectedRoute - loading:', loading, 'user:', !!user, 'isChecking:', isChecking);
+    
     if (!loading) {
-      if (!user) {
+      if (!user && !hasRedirected) {
+        // console.log('No user found, redirecting to login...');
+        setHasRedirected(true);
         router.replace('/login');
-      } else {
+      } else if (user) {
+        // console.log('User authenticated, showing content for:', user.email);
         setIsChecking(false);
       }
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, hasRedirected]);
 
-  if (loading || isChecking) {
+  // Reset redirect flag when user changes
+  useEffect(() => {
+    if (user) {
+      setHasRedirected(false);
+    }
+  }, [user]);
+
+  if (loading || (isChecking && !hasRedirected)) {
     return fallback || (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="w-full max-w-md">

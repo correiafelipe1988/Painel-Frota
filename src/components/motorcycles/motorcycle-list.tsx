@@ -127,6 +127,7 @@ export function MotorcycleList({ filters, motorcycles, onUpdateStatus, onDeleteM
               <TableHead>Tipo</TableHead>
               <TableHead>Franqueado</TableHead>
               <TableHead>Valor Semanal</TableHead>
+              <TableHead>Caução</TableHead>
               <TableHead>Últ. Movimento</TableHead>
               <TableHead>Ociosa (Dias)</TableHead>
               <TableHead>Ações</TableHead>
@@ -135,7 +136,7 @@ export function MotorcycleList({ filters, motorcycles, onUpdateStatus, onDeleteM
           <TableBody>
             {filteredMotorcycles.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} className="text-center text-muted-foreground h-24">
+                <TableCell colSpan={11} className="text-center text-muted-foreground h-24">
                   Nenhuma motocicleta corresponde aos filtros atuais.
                 </TableCell>
               </TableRow>
@@ -167,6 +168,9 @@ export function MotorcycleList({ filters, motorcycles, onUpdateStatus, onDeleteM
                     <TableCell>{moto.franqueado || 'N/Definido'}</TableCell>
                     <TableCell>
                       {moto.valorSemanal ? `R$ ${moto.valorSemanal.toFixed(2).replace('.', ',')}` : 'N/A'}
+                    </TableCell>
+                    <TableCell>
+                      {moto.caucao ? `R$ ${moto.caucao.toFixed(2).replace('.', ',')}` : 'N/A'}
                     </TableCell>
                     <TableCell>{moto.data_ultima_mov ? new Date(moto.data_ultima_mov + 'T00:00:00Z').toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'N/A'}</TableCell>
                     <TableCell>

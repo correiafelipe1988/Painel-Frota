@@ -1,14 +1,9 @@
-
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RastreadoresTable } from "./rastreadores-table";
 import { Skeleton } from "@/components/ui/skeleton";
-
-interface RastreadorData {
-  id?: string;
-  [key: string]: any;
-}
+import type { RastreadorData } from '@/lib/types';
 
 interface RastreadoresListProps {
   rastreadores: RastreadorData[];

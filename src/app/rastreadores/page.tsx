@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useCallback, useRef, useState, useEffect, useMemo } from "react";
@@ -26,20 +25,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RastreadorFilters, RastreadorFiltersState } from "@/components/rastreadores/rastreador-filters";
-
-interface RastreadorData {
-  id?: string;
-  cnpj: string;
-  empresa: string;
-  franqueado: string;
-  chassi: string;
-  placa: string;
-  rastreador: string;
-  tipo: string;
-  moto: string;
-  mes: string;
-  valor: string;
-}
+import type { RastreadorData } from '@/lib/types';
 
 export default function RastreadoresPage() {
   const { toast } = useToast();
@@ -150,7 +136,7 @@ export default function RastreadoresPage() {
 
   const parseCSV = (csvText: string): Omit<RastreadorData, 'id'>[] => {
     let cleanedCsvText = csvText.charCodeAt(0) === 0xFEFF ? csvText.substring(1) : csvText;
-    const lines = cleanedCsvText.trim().split().map(line => line.trim()).filter(line => line);
+    const lines = cleanedCsvText.trim().split('\n').map(line => line.trim()).filter(line => line);
 
     if (lines.length < 2) throw new Error("CSV inválido: Necessita de cabeçalho e pelo menos uma linha de dados.");
 

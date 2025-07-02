@@ -2,7 +2,7 @@
 // src/lib/firebase/config.ts
 import { initializeApp, getApp, getApps, type FirebaseApp } from "firebase/app";
 import { getFirestore, type Firestore } from "firebase/firestore";
-import { getAuth, type Auth } from "firebase/auth";
+import { getAuth, type Auth, setPersistence, browserLocalPersistence } from "firebase/auth";
 
 // Validação das variáveis de ambiente
 const requiredEnvVars = {
@@ -49,6 +49,13 @@ try {
 
   db = getFirestore(app);
   auth = getAuth(app);
+  
+  // Configurar persistência para manter o usuário logado
+  if (typeof window !== 'undefined') {
+    setPersistence(auth, browserLocalPersistence).catch((error) => {
+      console.warn('Erro ao configurar persistência do Firebase Auth:', error);
+    });
+  }
 } catch (error) {
   console.error('Erro ao inicializar Firebase:', error);
   throw error;

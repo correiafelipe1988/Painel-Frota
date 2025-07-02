@@ -33,32 +33,68 @@ export function useAuth() {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
+    // Verificar se há um usuário salvo no localStorage
+    if (typeof window !== 'undefined' && !initialized) {
+      const savedUser = localStorage.getItem('firebase_user');
+      if (savedUser) {
+        try {
+          const userData = JSON.parse(savedUser);
+          // console.log('Found saved user in localStorage:', userData.email);
+        } catch (error) {
+          // console.error('Error parsing saved user:', error);
+          localStorage.removeItem('firebase_user');
+        }
+      }
+      setInitialized(true);
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      // console.log('Auth state changed:', user ? `User logged in: ${user.email}` : 'User logged out');
       setUser(user);
+      setLoading(false);
+      
+      // Salvar/remover usuário do localStorage
+      if (typeof window !== 'undefined') {
+        if (user) {
+          const userData = {
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName,
+            photoURL: user.photoURL
+          };
+          localStorage.setItem('firebase_user', JSON.stringify(userData));
+          // console.log('User data saved to localStorage:', userData.email);
+        } else {
+          localStorage.removeItem('firebase_user');
+          // console.log('User data removed from localStorage');
+        }
+      }
+    }, (error) => {
+      console.error('Auth state change error:', error);
       setLoading(false);
     });
 
     // Timeout de segurança para evitar loading infinito
     const timeout = setTimeout(() => {
-      if (loading) {
-        setLoading(false);
-      }
-    }, 3000);
+      // console.log('Auth timeout reached, setting loading to false');
+      setLoading(false);
+    }, 5000);
 
     return () => {
       unsubscribe();
       clearTimeout(timeout);
     };
-  }, [loading]);
+  }, [initialized]);
 
   const signIn = async (email: string, password: string) => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast({
         title: "Login realizado com sucesso!",
-        description: "Bem-vindo ao Master Salvador",
+        description: "Bem-vindo ao Master Porto Alegre",
       });
     } catch (error: any) {
       let errorMessage = "Erro ao fazer login";
@@ -108,7 +144,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       toast({
         title: "Conta criada com sucesso!",
-        description: "Bem-vindo ao Master Salvador",
+        description: "Bem-vindo ao Master Porto Alegre",
       });
     } catch (error: any) {
       let errorMessage = "Erro ao criar conta";

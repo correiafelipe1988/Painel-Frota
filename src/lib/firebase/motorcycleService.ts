@@ -1,4 +1,3 @@
-
 // src/lib/firebase/motorcycleService.ts
 import {
   collection,
@@ -13,6 +12,7 @@ import {
   orderBy,
   getDocs,
   getDoc,
+  where,
 } from 'firebase/firestore';
 import { db } from './config';
 import type { Motorcycle, MotorcycleStatus } from '@/lib/types';
@@ -809,4 +809,15 @@ export async function updateWeeklyValuesForRentedMotorcycles(): Promise<void> {
     console.error('Erro ao atualizar valores semanais:', error);
     throw error;
   }
+}
+
+export async function fetchMotorcyclesByFranchiseeAndDateRange(franqueado: string, startDate: string, endDate: string): Promise<Motorcycle[]> {
+  const q = query(
+    motorcyclesCollectionRef,
+    where('franqueado', '==', franqueado),
+    where('data_ultima_mov', '>=', startDate),
+    where('data_ultima_mov', '<=', endDate)
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Motorcycle));
 }

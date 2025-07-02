@@ -158,15 +158,16 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         <SidebarHeader className="p-4 flex items-center justify-start">
           <Link href="/" className="flex items-center">
             <Image
-              src="https://locagoraveiculos.com.br/storage/2023/08/GO-removebg-preview-2-300x252.png" 
-              alt="Locagora Logo"
-              width={48} 
-              height={40} 
-              className="object-contain mr-2" 
+              src="https://i.postimg.cc/vTxkND9h/GO-removebg-preview-2.png"
+              alt="GO Logo"
+              width={64}
+              height={56}
+              className="object-contain mr-3"
               priority
+              unoptimized
             />
              <div>
-              <span className="font-bold text-lg text-sidebar-foreground">Master Salvador</span>
+              <span className="font-bold text-lg text-sidebar-foreground">Master Porto Alegre</span>
               <p className="text-xs text-sidebar-foreground/80">Gestao de Locacao</p>
             </div>
           </Link>
@@ -230,7 +231,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                       {user?.displayName || 'Usuário'}
                     </p>
                     <p className="text-xs text-sidebar-foreground/80 truncate">
-                      {user?.email || 'Salvador - BA'}
+                      {user?.email || 'Porto Alegre - RS'}
                     </p>
                   </div>
                 </div>
@@ -263,12 +264,13 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           </div>
           <div className="flex items-center">
             <Image
-              src="https://i.postimg.cc/yx9LJQpZ/logo.png"
-              alt="Floc Grupo Logo"
-              width={144} 
-              height={36} 
+              src="https://i.postimg.cc/4nksF4RV/logo.png"
+              alt="GO Logo"
+              width={180}
+              height={150}
               className="object-contain"
               priority
+              unoptimized
             />
           </div>
         </header>

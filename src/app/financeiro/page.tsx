@@ -124,7 +124,8 @@ export default function FinanceiroPage() {
           totalRentedMotorcycles: 0,
           financialOccupationRate: 0,
           revenueGrowth: 0,
-          averageTicketPerMoto: 0
+          averageTicketPerMoto: 0,
+          receitaLiquidaPorMoto: 0
         },
         franchiseeRevenues: [],
         monthlyAnalysis: [],

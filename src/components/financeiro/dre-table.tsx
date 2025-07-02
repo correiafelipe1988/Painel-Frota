@@ -178,8 +178,27 @@ export function DRETable({ motorcycles, selectedYear }: DRETableProps) {
       const uniquePlates = new Set(filteredMotorcycles.map(moto => moto.placa));
       const motorcyclesInMonth = uniquePlates.size; // Quantidade de motos únicas do franqueado no mês específico
 
-      // Receitas Não Operacionais
-      const caucao = (rentedMotorcycles * 700) + (relocatedMotorcycles * 400); // R$ 700 por moto alugada + R$ 400 por moto relocada
+      // Receitas Não Operacionais - buscar valores reais da coluna caução
+      const caucao = filteredMotorcycles.reduce((sum, moto) => {
+        // Verificar se a moto foi alugada ou relocada neste mês específico
+        if (!moto.data_ultima_mov) return sum;
+        
+        try {
+          const motoDate = new Date(moto.data_ultima_mov);
+          const motoYear = motoDate.getFullYear();
+          const motoMonth = motoDate.getMonth() + 1;
+          
+          // Só somar caução se foi alugada/relocada neste mês específico
+          if (motoYear === year && motoMonth === month &&
+              (moto.status === 'alugada' || moto.status === 'relocada')) {
+            return sum + (moto.caucao || 0);
+          }
+          
+          return sum;
+        } catch {
+          return sum;
+        }
+      }, 0);
       const juros = hasRevenue ? Math.floor(motorcyclesInMonth / 10) * 212 : 0; // R$ 212 a cada 10 motos no mês (só se há receita)
       const receitasNaoOperacionais = {
         caucao,
@@ -623,7 +642,7 @@ export function DRETable({ motorcycles, selectedYear }: DRETableProps) {
                   <li><strong>Outros:</strong></li>
                   <li>Manutenção: Será integrada com base de dados externa</li>
                   <li>Royalties: 5% sobre receita operacional</li>
-                  <li>Caução: R$ 700 por moto alugada + R$ 400 por moto relocada no mês específico</li>
+                  <li>Caução: Valor real baseado na coluna "Caução" das motocicletas alugadas/relocadas no mês específico</li>
                   <li>Simples Nacional: 7% sobre receita bruta</li>
                 </ul>
               </div>

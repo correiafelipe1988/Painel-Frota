@@ -354,7 +354,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-3 mb-1">
             <BarChart3 className="h-8 w-8 text-primary" />
             <div>
-              <h1 className="text-3xl font-bold text-foreground font-headline">Dashboard Master Salvador</h1>
+              <h1 className="text-3xl font-bold text-foreground font-headline">Dashboard Master Porto Alegre</h1>
               <p className="text-muted-foreground">Visão geral da frota de motos</p>
             </div>
           </div>
