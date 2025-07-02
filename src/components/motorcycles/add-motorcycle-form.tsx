@@ -271,43 +271,28 @@ export function AddMotorcycleForm({ onSubmit, onCancel, initialData }: AddMotorc
               control={form.control}
               name="data_ultima_mov"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
+                <FormItem>
                   <FormLabel>Data Última Movimentação</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full pl-3 text-left font-normal justify-start",
-                            !field.value && "text-muted-foreground"
-                          )}
-                          type="button"
-                        >
-                          {field.value && isValid(field.value) ? (
-                            format(field.value, "dd/MM/yyyy", { locale: ptBR })
-                          ) : (
-                            <span>Selecione a data</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value || undefined}
-                        onSelect={(date) => {
-                          field.onChange(date);
-                        }}
-                        disabled={(date) =>
-                          date > new Date() || date < new Date("1900-01-01")
+                  <FormControl>
+                    <Input
+                      type="date"
+                      value={field.value && isValid(field.value) ? format(field.value, "yyyy-MM-dd") : ""}
+                      onChange={(e) => {
+                        const dateValue = e.target.value;
+                        if (dateValue) {
+                          const parsedDate = parseISO(dateValue);
+                          if (isValid(parsedDate)) {
+                            field.onChange(parsedDate);
+                          }
+                        } else {
+                          field.onChange(undefined);
                         }
-                        initialFocus
-                        locale={ptBR}
-                      />
-                    </PopoverContent>
-                  </Popover>
+                      }}
+                      max={format(new Date(), "yyyy-MM-dd")}
+                      min="1900-01-01"
+                      className="w-full"
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
