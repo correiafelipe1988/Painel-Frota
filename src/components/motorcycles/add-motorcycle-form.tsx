@@ -279,9 +279,10 @@ export function AddMotorcycleForm({ onSubmit, onCancel, initialData }: AddMotorc
                         <Button
                           variant={"outline"}
                           className={cn(
-                            "pl-3 text-left font-normal",
+                            "w-full pl-3 text-left font-normal justify-start",
                             !field.value && "text-muted-foreground"
                           )}
+                          type="button"
                         >
                           {field.value && isValid(field.value) ? (
                             format(field.value, "dd/MM/yyyy", { locale: ptBR })
@@ -295,8 +296,10 @@ export function AddMotorcycleForm({ onSubmit, onCancel, initialData }: AddMotorc
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
+                        selected={field.value || undefined}
+                        onSelect={(date) => {
+                          field.onChange(date);
+                        }}
                         disabled={(date) =>
                           date > new Date() || date < new Date("1900-01-01")
                         }
