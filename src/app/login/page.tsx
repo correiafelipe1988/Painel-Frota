@@ -42,6 +42,13 @@ export default function LoginPage() {
     }
   };
 
+  // Redirecionar se já estiver logado
+  useEffect(() => {
+    if (!loading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, loading, router]);
+
   // Se estiver carregando, mostrar loading
   if (loading) {
     return (
@@ -54,10 +61,16 @@ export default function LoginPage() {
     );
   }
 
-  // Se já estiver logado, redirecionar
+  // Se já estiver logado, mostrar loading enquanto redireciona
   if (user) {
-    router.push('/dashboard');
-    return null;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Redirecionando...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
