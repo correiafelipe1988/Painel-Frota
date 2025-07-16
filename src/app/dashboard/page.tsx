@@ -52,13 +52,12 @@ const processMotorcycleData = (motorcycles: Motorcycle[], year: number) => {
     const totalUniqueMotorcycles = representativeMotorcycles.length;
 
     const motosAlugadasCount = representativeMotorcycles.filter(m => m.status === 'alugada').length;
-    const motosRelocadasCount = representativeMotorcycles.filter(m => m.status === 'relocada').length;
-    const totalLocacoesCount = motosAlugadasCount + motosRelocadasCount;
+    const totalLocacoesCount = motosAlugadasCount;
 
     const statusCounts: Record<string, number> = {};
     representativeMotorcycles.forEach(moto => {
       const statusKey = moto.status || 'N/Definido';
-      if (statusKey === 'alugada' || statusKey === 'relocada') {
+      if (statusKey === 'alugada') {
         statusCounts['locadas'] = (statusCounts['locadas'] || 0) + 1;
       } else {
         statusCounts[statusKey] = (statusCounts[statusKey] || 0) + 1;
@@ -78,7 +77,6 @@ const processMotorcycleData = (motorcycles: Motorcycle[], year: number) => {
     }));
     
     const rentalCounts = Array(12).fill(0);
-    const relocatedCounts = Array(12).fill(0);
 
     motorcycles.forEach(moto => {
         if (moto.data_ultima_mov) {
@@ -87,7 +85,6 @@ const processMotorcycleData = (motorcycles: Motorcycle[], year: number) => {
                 if (isValid(movDate) && getYear(movDate) === year) {
                     const monthIndex = getMonth(movDate);
                     if (moto.status === 'alugada') rentalCounts[monthIndex]++;
-                    if (moto.status === 'relocada') relocatedCounts[monthIndex]++;
                 }
             } catch (e) { console.error("Error parsing date for motorcycle charts: ", moto.data_ultima_mov, e); }
         }
@@ -96,8 +93,7 @@ const processMotorcycleData = (motorcycles: Motorcycle[], year: number) => {
     const combinedRentalData = monthAbbreviations.map((m, i) => ({
       month: m,
       alugadas: rentalCounts[i],
-      relocadas: relocatedCounts[i],
-      total: rentalCounts[i] + relocatedCounts[i],
+      total: rentalCounts[i],
     }));
 
     const earliestDateByPlaca = new Map<string, Date>();
@@ -158,7 +154,6 @@ const processDailyMotorcycleData = (motorcycles: Motorcycle[]) => {
     const dailyRentalData = last30Days.map(date => {
         const dayString = format(date, 'dd/MM');
         let alugadasCount = 0;
-        let relocadasCount = 0;
 
         motorcycles.forEach(moto => {
             if (moto.data_ultima_mov) {
@@ -166,7 +161,6 @@ const processDailyMotorcycleData = (motorcycles: Motorcycle[]) => {
                     const movDate = parseISO(moto.data_ultima_mov);
                     if (isValid(movDate) && isSameDay(startOfDay(movDate), date)) {
                         if (moto.status === 'alugada') alugadasCount++;
-                        if (moto.status === 'relocada') relocadasCount++;
                     }
                 } catch (e) {
                     console.error("Error parsing date for daily motorcycle charts: ", moto.data_ultima_mov, e);
@@ -177,8 +171,7 @@ const processDailyMotorcycleData = (motorcycles: Motorcycle[]) => {
         return {
             day: dayString,
             alugadas: alugadasCount,
-            relocadas: relocadasCount,
-            total: alugadasCount + relocadasCount,
+            total: alugadasCount,
         };
     });
 
@@ -194,28 +187,13 @@ const processTodayData = (motorcycles: Motorcycle[]) => {
     let motosRecuperadasHoje = 0;
     let motosRelocadasHoje = 0;
     
-    // Contar motos em manutenção (status atual, não necessariamente de hoje)
-    const motosEmManutencao = motorcycles.filter(moto => {
-        const uniqueMotorcyclesByPlaca: { [placa: string]: Motorcycle } = {};
-        motorcycles.forEach(m => {
-            if (!m.placa) return;
-            const existingMoto = uniqueMotorcyclesByPlaca[m.placa];
-            if (!existingMoto || (m.data_ultima_mov && existingMoto.data_ultima_mov && new Date(m.data_ultima_mov) > new Date(existingMoto.data_ultima_mov)) || (m.data_ultima_mov && !existingMoto.data_ultima_mov)) {
-                uniqueMotorcyclesByPlaca[m.placa] = m;
-            }
-        });
-        const representativeMotorcycles = Object.values(uniqueMotorcyclesByPlaca);
-        return representativeMotorcycles.filter(m => m.status === 'manutencao').length;
-    });
-    
     motorcycles.forEach(moto => {
         if (moto.data_ultima_mov) {
             try {
                 const movDate = parseISO(moto.data_ultima_mov);
                 if (isValid(movDate) && isSameDay(startOfDay(movDate), todayStart)) {
                     if (moto.status === 'alugada') motosAlugadasHoje++;
-                    if (moto.status === 'recolhida') motosRecuperadasHoje++;
-                    if (moto.status === 'relocada') motosRelocadasHoje++;
+                    // Removidos status antigos que não existem mais
                 }
             } catch (e) {
                 console.error("Error parsing date for today data: ", moto.data_ultima_mov, e);
@@ -237,8 +215,8 @@ const processTodayData = (motorcycles: Motorcycle[]) => {
     
     return {
         motosAlugadasHoje,
-        motosRecuperadasHoje,
-        motosRelocadasHoje,
+        motosRecuperadasHoje: 0, // Não há mais status 'recolhida'
+        motosRelocadasHoje: 0, // Não há mais status 'relocada'
         motosEmManutencao: motosManutencaoAtual
     };
 };
@@ -271,13 +249,7 @@ const processMonthData = (motorcycles: Motorcycle[], selectedMonth: number, sele
                             case 'manutencao':
                                 emManutencao++;
                                 break;
-                            case 'relocada':
-                                motosRelocadas++;
-                                break;
-                            case 'indisponivel_rastreador':
-                            case 'indisponivel_emplacamento':
-                                // Estes status são contados separadamente se necessário
-                                break;
+                            // Removidos status antigos que não existem mais
                         }
                     }
                 }
@@ -291,7 +263,7 @@ const processMonthData = (motorcycles: Motorcycle[], selectedMonth: number, sele
         motosDisponiveis,
         motosAlugadas,
         emManutencao,
-        motosRelocadas
+        motosRelocadas: 0 // Não há mais status 'relocada'
     };
 };
 
@@ -354,7 +326,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-3 mb-1">
             <BarChart3 className="h-8 w-8 text-primary" />
             <div>
-              <h1 className="text-3xl font-bold text-foreground font-headline">Dashboard Master Porto Alegre</h1>
+              <h1 className="text-3xl font-bold text-foreground font-headline">Dashboard Controle de Frota</h1>
               <p className="text-muted-foreground">Visão geral da frota de motos</p>
             </div>
           </div>

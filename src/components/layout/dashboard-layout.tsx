@@ -31,10 +31,8 @@ const navItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", subLabel: "Visão geral", icon: LayoutDashboard },
   { href: "/motorcycles", label: "Gestão de Motos", subLabel: "Frota completa", icon: ListFilter },
   { href: "/projecao-motos", label: "Projeção de Crescimento", subLabel: "Meta 1.000 motos", icon: TrendingUp },
-  { href: "/rastreadores", label: "Rastreadores", subLabel: "Nossos rastreadores", icon: MapPin },
   { href: "/franqueados", label: "Franqueados", subLabel: "Análise por franqueado", icon: Users },
   { href: "/financeiro", label: "Financeiro", subLabel: "Receitas e análises", icon: DollarSign },
-  { href: "/relatorios", label: "Relatórios", subLabel: "Análises e métricas", icon: BarChart3 },
   { href: "/predict-idle", label: "Previsão de Ociosidade", subLabel: "IA para tempo ocioso", icon: BarChart3 },
   { href: "/frota", label: "Frota", subLabel: "Análise de modelos", icon: Package },
 ];
@@ -43,9 +41,11 @@ const initialStatusRapidoItems: StatusRapidoItemType[] = [
   { label: "Total de Motos", subLabel: "Placas únicas", count: 0, bgColor: "bg-slate-100", textColor: "text-slate-700", badgeTextColor: "text-slate-700", icon: Package },
   { label: "Disponíveis", subLabel: "Motos prontas", count: 0, bgColor: "bg-green-100", textColor: "text-green-700", badgeTextColor: "text-green-700", statusKey: 'active', icon: CheckCircle2 },
   { label: "Alugadas", subLabel: "Em uso", count: 0, bgColor: "bg-blue-100", textColor: "text-blue-700", badgeTextColor: "text-blue-700", statusKey: 'alugada', icon: SidebarBikeIcon },
-  { label: "Relocadas", subLabel: "Em transferência", count: 0, bgColor: "bg-gray-100", textColor: "text-gray-700", badgeTextColor: "text-gray-700", statusKey: 'relocada', icon: MapPin },
   { label: "Manutenção", subLabel: "Em oficina", count: 0, bgColor: "bg-purple-100", textColor: "text-purple-700", badgeTextColor: "text-purple-700", statusKey: 'manutencao', icon: Wrench },
-  { label: "Recolhidas", subLabel: "Aguardando", count: 0, bgColor: "bg-orange-100", textColor: "text-orange-700", badgeTextColor: "text-orange-700", statusKey: 'recolhida', icon: XCircle },
+  { label: "Sucata", subLabel: "Baixadas", count: 0, bgColor: "bg-gray-100", textColor: "text-gray-700", badgeTextColor: "text-gray-700", statusKey: 'sucata', icon: XCircle },
+  { label: "Sinistro", subLabel: "Acidentadas", count: 0, bgColor: "bg-red-100", textColor: "text-red-700", badgeTextColor: "text-red-700", statusKey: 'sinistro', icon: XCircle },
+  { label: "Não Transferida", subLabel: "Pendente", count: 0, bgColor: "bg-yellow-100", textColor: "text-yellow-700", badgeTextColor: "text-yellow-700", statusKey: 'nao_transferida', icon: MapPin },
+  { label: "Não Localizada", subLabel: "Perdidas", count: 0, bgColor: "bg-orange-100", textColor: "text-orange-700", badgeTextColor: "text-orange-700", statusKey: 'nao_localizada', icon: XCircle },
 ];
 
 
@@ -123,12 +123,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     const counts: Record<MotorcycleStatus, number> = {
       active: 0,
       alugada: 0,
-      inadimplente: 0,
       manutencao: 0,
-      recolhida: 0,
-      relocada: 0,
-      indisponivel_rastreador: 0,
-      indisponivel_emplacamento: 0,
+      sucata: 0,
+      sinistro: 0,
+      furtada: 0,
+      apropriacao_indebita: 0,
+      nao_transferida: 0,
+      vendida: 0,
+      nao_localizada: 0,
     };
 
     representativeMotorcycles.forEach(moto => {
@@ -167,7 +169,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               unoptimized
             />
              <div>
-              <span className="font-bold text-lg text-sidebar-foreground">Master Porto Alegre</span>
+              <span className="font-bold text-lg text-sidebar-foreground">Controle de Frota</span>
               <p className="text-xs text-sidebar-foreground/80">Gestao de Locacao</p>
             </div>
           </Link>

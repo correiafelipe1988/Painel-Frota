@@ -27,13 +27,13 @@ async function createAdminUser() {
     );
     
     await updateProfile(userCredential.user, {
-      displayName: 'Administrador Master Porto Alegre'
+      displayName: 'Administrador Controle de Frota'
     });
     
     console.log('✅ Usuário administrativo criado com sucesso!');
     console.log('📧 Email: admin@masterportoalegre.com');
     console.log('🔑 Senha: admin123456');
-    console.log('👤 Nome: Administrador Master Porto Alegre');
+    console.log('👤 Nome: Administrador Controle de Frota');
     
   } catch (error) {
     console.error('❌ Erro ao criar usuário:', error.message);

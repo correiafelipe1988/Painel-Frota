@@ -30,12 +30,14 @@ const getStatusBadgeVariant = (status?: MotorcycleStatus) => {
   switch (status) {
     case 'active': return 'default';
     case 'alugada': return 'default';
-    case 'inadimplente': return 'destructive';
     case 'manutencao': return 'secondary';
-    case 'recolhida': return 'outline';
-    case 'relocada': return 'default';
-    case 'indisponivel_rastreador': return 'destructive';
-    case 'indisponivel_emplacamento': return 'destructive';
+    case 'sucata': return 'destructive';
+    case 'sinistro': return 'destructive';
+    case 'furtada': return 'destructive';
+    case 'apropriacao_indebita': return 'destructive';
+    case 'nao_transferida': return 'outline';
+    case 'vendida': return 'default';
+    case 'nao_localizada': return 'destructive';
     default: return 'outline';
   }
 };
@@ -45,12 +47,14 @@ const getStatusBadgeClassName = (status?: MotorcycleStatus) => {
   switch (status) {
     case 'active': return 'bg-green-500 hover:bg-green-600 text-white border-green-500';
     case 'alugada': return 'bg-sky-500 hover:bg-sky-600 text-white border-sky-500';
-    case 'inadimplente': return 'bg-red-500 hover:bg-red-600 text-white border-red-500';
     case 'manutencao': return 'bg-yellow-500 hover:bg-yellow-600 text-black border-yellow-500';
-    case 'recolhida': return 'bg-gray-500 hover:bg-gray-600 text-white border-gray-500';
-    case 'relocada': return 'bg-blue-500 hover:bg-blue-600 text-white border-blue-500';
-    case 'indisponivel_rastreador': return 'bg-orange-500 hover:bg-orange-600 text-white border-orange-500';
-    case 'indisponivel_emplacamento': return 'bg-purple-500 hover:bg-purple-600 text-white border-purple-500';
+    case 'sucata': return 'bg-gray-600 hover:bg-gray-700 text-white border-gray-600';
+    case 'sinistro': return 'bg-red-600 hover:bg-red-700 text-white border-red-600';
+    case 'furtada': return 'bg-red-500 hover:bg-red-600 text-white border-red-500';
+    case 'apropriacao_indebita': return 'bg-orange-600 hover:bg-orange-700 text-white border-orange-600';
+    case 'nao_transferida': return 'bg-purple-600 hover:bg-purple-700 text-white border-purple-600';
+    case 'vendida': return 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600';
+    case 'nao_localizada': return 'bg-gray-500 hover:bg-gray-600 text-white border-gray-500';
     default: return 'bg-gray-200 text-gray-700 border-gray-400';
   }
 }
@@ -61,12 +65,14 @@ const translateStatus = (status?: MotorcycleStatus): string => {
   switch (status) {
     case 'active': return 'Disponível';
     case 'alugada': return 'Alugada';
-    case 'inadimplente': return 'Inadimplente';
     case 'manutencao': return 'Manutenção';
-    case 'recolhida': return 'Recolhida';
-    case 'relocada': return 'Relocada';
-    case 'indisponivel_rastreador': return 'Indisponível Rastreador';
-    case 'indisponivel_emplacamento': return 'Indisponível Emplacamento';
+    case 'sucata': return 'Sucata';
+    case 'sinistro': return 'Sinistro';
+    case 'furtada': return 'Furtada';
+    case 'apropriacao_indebita': return 'Apropriação Indébita';
+    case 'nao_transferida': return 'Não Transferida';
+    case 'vendida': return 'Vendida';
+    case 'nao_localizada': return 'Não Localizada';
     default:
       const s = status as string;
       return s.charAt(0).toUpperCase() + s.slice(1);
@@ -120,14 +126,14 @@ export function MotorcycleList({ filters, motorcycles, onUpdateStatus, onDeleteM
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>CS</TableHead>
               <TableHead>Placa</TableHead>
               <TableHead>Modelo</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Tipo</TableHead>
               <TableHead>Franqueado</TableHead>
-              <TableHead>Valor Semanal</TableHead>
-              <TableHead>Caução</TableHead>
+              <TableHead>UF</TableHead>
+              <TableHead>Cidade</TableHead>
+              <TableHead>Local de Compra/Distrato</TableHead>
               <TableHead>Últ. Movimento</TableHead>
               <TableHead>Ociosa (Dias)</TableHead>
               <TableHead>Ações</TableHead>
@@ -147,16 +153,6 @@ export function MotorcycleList({ filters, motorcycles, onUpdateStatus, onDeleteM
 
                 return (
                   <TableRow key={moto.id}>
-                    <TableCell>
-                      {moto.qrCodeUrl ? (
-                         <span title={moto.qrCodeUrl} className="flex items-center gap-1 text-sm">
-                          <QrCode className="h-4 w-4 text-muted-foreground" />
-                          {moto.qrCodeUrl}
-                        </span>
-                      ) : (
-                        <div className="text-xs text-muted-foreground">N/A</div>
-                      )}
-                    </TableCell>
                     <TableCell className="font-medium">{moto.placa}</TableCell>
                     <TableCell>{moto.model || 'N/Definido'}</TableCell>
                     <TableCell>
@@ -166,12 +162,9 @@ export function MotorcycleList({ filters, motorcycles, onUpdateStatus, onDeleteM
                     </TableCell>
                     <TableCell className="capitalize">{moto.type ? (moto.type === 'nova' ? 'Nova' : 'Usada') : 'N/Definido'}</TableCell>
                     <TableCell>{moto.franqueado || 'N/Definido'}</TableCell>
-                    <TableCell>
-                      {moto.valorSemanal ? `R$ ${moto.valorSemanal.toFixed(2).replace('.', ',')}` : 'N/A'}
-                    </TableCell>
-                    <TableCell>
-                      {moto.caucao ? `R$ ${moto.caucao.toFixed(2).replace('.', ',')}` : 'N/A'}
-                    </TableCell>
+                    <TableCell>{moto.uf || 'N/A'}</TableCell>
+                    <TableCell>{moto.cidade || 'N/A'}</TableCell>
+                    <TableCell>{moto.localCompra || 'N/A'}</TableCell>
                     <TableCell>{moto.data_ultima_mov ? new Date(moto.data_ultima_mov + 'T00:00:00Z').toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'N/A'}</TableCell>
                     <TableCell>
                       {daysIdle === 'Pausado' ? <Badge variant="secondary">Pausado</Badge> : daysIdle}
@@ -203,26 +196,35 @@ export function MotorcycleList({ filters, motorcycles, onUpdateStatus, onDeleteM
                           ) : null}
 
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => onUpdateStatus(moto.id, 'active')}>
-                            <CheckCircle className="mr-2 h-4 w-4 text-green-500" /> Marcar como Disponível
-                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => onUpdateStatus(moto.id, 'alugada')}>
-                            <Bike className="mr-2 h-4 w-4 text-sky-500" /> Marcar como Alugada
+                            <Bike className="mr-2 h-4 w-4 text-sky-500" /> Alugada
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => onUpdateStatus(moto.id, 'recolhida')}>
-                             <XCircle className="mr-2 h-4 w-4 text-gray-500" /> Marcar como Recolhida
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => onUpdateStatus(moto.id, 'relocada')}>
-                             <Bike className="mr-2 h-4 w-4 text-blue-500" /> Marcar como Relocada
+                          <DropdownMenuItem onClick={() => onUpdateStatus(moto.id, 'active')}>
+                            <CheckCircle className="mr-2 h-4 w-4 text-green-500" /> Disponível
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => onUpdateStatus(moto.id, 'manutencao')}>
-                            <Wrench className="mr-2 h-4 w-4 text-yellow-500" /> Marcar para Manutenção
+                            <Wrench className="mr-2 h-4 w-4 text-yellow-500" /> Manutenção
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => onUpdateStatus(moto.id, 'indisponivel_rastreador')}>
-                            <XCircle className="mr-2 h-4 w-4 text-orange-500" /> Indisponível Rastreador
+                          <DropdownMenuItem onClick={() => onUpdateStatus(moto.id, 'sucata')}>
+                            <XCircle className="mr-2 h-4 w-4 text-gray-600" /> Sucata
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => onUpdateStatus(moto.id, 'indisponivel_emplacamento')}>
-                            <XCircle className="mr-2 h-4 w-4 text-purple-500" /> Indisponível Emplacamento
+                          <DropdownMenuItem onClick={() => onUpdateStatus(moto.id, 'sinistro')}>
+                            <XCircle className="mr-2 h-4 w-4 text-red-600" /> Sinistro
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onUpdateStatus(moto.id, 'furtada')}>
+                            <XCircle className="mr-2 h-4 w-4 text-red-500" /> Furtada
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onUpdateStatus(moto.id, 'apropriacao_indebita')}>
+                            <XCircle className="mr-2 h-4 w-4 text-orange-600" /> Apropriação Indébita
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onUpdateStatus(moto.id, 'nao_transferida')}>
+                            <XCircle className="mr-2 h-4 w-4 text-purple-600" /> Não Transferida
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onUpdateStatus(moto.id, 'vendida')}>
+                            <CheckCircle className="mr-2 h-4 w-4 text-blue-600" /> Vendida
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onUpdateStatus(moto.id, 'nao_localizada')}>
+                            <XCircle className="mr-2 h-4 w-4 text-gray-500" /> Não Localizada
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem

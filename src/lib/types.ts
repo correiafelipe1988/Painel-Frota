@@ -1,4 +1,4 @@
-export type MotorcycleStatus = 'active' | 'alugada' | 'inadimplente' | 'manutencao' | 'recolhida' | 'relocada' | 'indisponivel_rastreador' | 'indisponivel_emplacamento';
+export type MotorcycleStatus = 'active' | 'alugada' | 'manutencao' | 'sucata' | 'sinistro' | 'furtada' | 'apropriacao_indebita' | 'nao_transferida' | 'vendida' | 'nao_localizada';
 export type MotorcycleType = 'nova' | 'usada';
 
 export interface Motorcycle {
@@ -12,10 +12,13 @@ export interface Motorcycle {
   data_ultima_mov?: string; // ISO 8601 format: "YYYY-MM-DDTHH:mm:ss.sssZ"
   tempo_ocioso_dias?: number;
   qrCodeUrl?: string;
-  valorSemanal?: number;
-  caucao?: number; // Valor da caução
+  uf?: string; // Unidade Federativa
+  cidade?: string; // Cidade
+  localCompra?: string; // Local de Compra / Distrato
   contagemPausada?: boolean;
   dias_ociosos_congelados?: number; // Dias ociosos no momento que entrou em manutenção
+  valorSemanal?: number; // Valor semanal da moto
+  caucao?: number; // Valor da caução
 }
 
 export type Kpi = {

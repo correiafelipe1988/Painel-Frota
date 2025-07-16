@@ -42,13 +42,18 @@ const fromFirestore = (docData: any): Omit<Motorcycle, 'id'> => {
   } else {
     delete data.valorSemanal; // Ensure it's not present if null/undefined from DB
   }
+  if (data.caucao !== undefined && data.caucao !== null) {
+    data.caucao = Number(data.caucao);
+  } else {
+    delete data.caucao; // Ensure it's not present if null/undefined from DB
+  }
   if (data.tempo_ocioso_dias !== undefined && data.tempo_ocioso_dias !== null) {
     data.tempo_ocioso_dias = Number(data.tempo_ocioso_dias);
   } else {
     delete data.tempo_ocioso_dias; // Ensure it's not present
   }
 
-  const allowedStatus: MotorcycleStatus[] = ['active', 'inadimplente', 'recolhida', 'relocada', 'manutencao', 'alugada', 'indisponivel_rastreador', 'indisponivel_emplacamento'];
+  const allowedStatus: MotorcycleStatus[] = ['active', 'alugada', 'manutencao', 'sucata', 'sinistro', 'furtada', 'apropriacao_indebita', 'nao_transferida', 'vendida', 'nao_localizada'];
   if (data.status && !allowedStatus.includes(data.status)) {
     console.warn(`Invalid status "${data.status}" from Firestore for doc, defaulting to 'alugada'.`);
     data.status = 'alugada';
@@ -56,7 +61,7 @@ const fromFirestore = (docData: any): Omit<Motorcycle, 'id'> => {
     data.status = 'alugada'; 
   }
 
-  const optionalStringFields: (keyof Motorcycle)[] = ['model', 'type', 'franqueado', 'qrCodeUrl'];
+  const optionalStringFields: (keyof Motorcycle)[] = ['model', 'type', 'franqueado', 'qrCodeUrl', 'uf', 'cidade', 'localCompra'];
   optionalStringFields.forEach(field => {
     if (data[field] === null || data[field] === undefined) {
          delete data[field]; // Ensure it's not present if null/undefined
@@ -135,7 +140,7 @@ export async function deleteMotorcycle(id: string): Promise<void> {
 export async function importMotorcyclesBatch(motorcycles: Omit<Motorcycle, 'id'>[]): Promise<string[]> {
   const batch = writeBatch(db);
   const addedMotorcycleIds: string[] = [];
-  const allowedStatus: MotorcycleStatus[] = ['active', 'inadimplente', 'recolhida', 'relocada', 'manutencao', 'alugada', 'indisponivel_rastreador', 'indisponivel_emplacamento'];
+  const allowedStatus: MotorcycleStatus[] = ['active', 'alugada', 'manutencao', 'sucata', 'sinistro', 'furtada', 'apropriacao_indebita', 'nao_transferida', 'vendida', 'nao_localizada'];
 
   motorcycles.forEach((moto) => {
     let preProcessedMoto: Partial<Omit<Motorcycle, 'id'>> = { ...moto };
@@ -147,7 +152,7 @@ export async function importMotorcyclesBatch(motorcycles: Omit<Motorcycle, 'id'>
       preProcessedMoto.data_ultima_mov = undefined;
     }
 
-     const optionalFields: (keyof Omit<Motorcycle, 'id' | 'placa' | 'status'>)[] = ['model', 'type', 'franqueado', 'qrCodeUrl', 'valorSemanal', 'tempo_ocioso_dias', 'data_ultima_mov'];
+     const optionalFields: (keyof Omit<Motorcycle, 'id' | 'placa' | 'status'>)[] = ['model', 'type', 'franqueado', 'qrCodeUrl', 'valorSemanal', 'caucao', 'tempo_ocioso_dias', 'data_ultima_mov'];
      optionalFields.forEach(field => {
          if (preProcessedMoto[field] === '' || preProcessedMoto[field] === null) { // Also handle explicit null from CSV parsing if any
             (preProcessedMoto as any)[field] = undefined;
@@ -179,7 +184,7 @@ export async function updateMotorcycleStatus(id: string, status: MotorcycleStatu
   };
   
   // Se a moto está sendo marcada como alugada ou relocada, limpar os dias ociosos congelados
-  if (status === 'alugada' || status === 'relocada') {
+  if (status === 'alugada') {
     updateData.contagemPausada = false;
     updateData.dias_ociosos_congelados = undefined; // Remove o valor congelado
   }
@@ -234,9 +239,8 @@ export function calculateCorrectIdleDays(motorcycles: Motorcycle[], currentMoto:
     return 'Pausado';
   }
 
-  // Para motos alugadas, relocadas, recolhidas ou indisponíveis, não mostrar dias ociosos
-  if (currentMoto.status === 'alugada' || currentMoto.status === 'relocada' || currentMoto.status === 'recolhida' ||
-      currentMoto.status === 'indisponivel_rastreador' || currentMoto.status === 'indisponivel_emplacamento') {
+  // Para motos alugadas, não mostrar dias ociosos
+  if (currentMoto.status === 'alugada') {
     return 'N/A';
   }
 
@@ -318,9 +322,8 @@ export function hasActiveIdleCount(motorcycles: Motorcycle[], currentMoto: Motor
     return false;
   }
 
-  // Para motos alugadas, relocadas, recolhidas ou indisponíveis, não há contagem ativa
-  if (currentMoto.status === 'alugada' || currentMoto.status === 'relocada' || currentMoto.status === 'recolhida' ||
-      currentMoto.status === 'indisponivel_rastreador' || currentMoto.status === 'indisponivel_emplacamento') {
+  // Para motos alugadas, não há contagem ativa
+  if (currentMoto.status === 'alugada') {
     return false;
   }
 
@@ -782,8 +785,8 @@ export async function updateWeeklyValuesForRentedMotorcycles(): Promise<void> {
       const motoData = fromFirestore(docSnapshot.data());
       const motoId = docSnapshot.id;
       
-      // Verificar se a moto tem status Alugada ou Relocada e se a placa está na lista de referência
-      if ((motoData.status === 'alugada' || motoData.status === 'relocada') &&
+      // Verificar se a moto tem status Alugada e se a placa está na lista de referência
+      if (motoData.status === 'alugada' &&
           motoData.placa &&
           weeklyValues[motoData.placa]) {
         
