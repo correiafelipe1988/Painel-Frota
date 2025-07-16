@@ -42,10 +42,13 @@ export default function LoginPage() {
     }
   };
 
-  // Redirecionar se já estiver logado
+  // Redirecionar se já estiver logado (com delay para evitar conflitos)
   useEffect(() => {
     if (!loading && user) {
-      router.push('/dashboard');
+      const redirectTimer = setTimeout(() => {
+        router.push('/dashboard');
+      }, 100);
+      return () => clearTimeout(redirectTimer);
     }
   }, [user, loading, router]);
 
@@ -61,16 +64,9 @@ export default function LoginPage() {
     );
   }
 
-  // Se já estiver logado, mostrar loading enquanto redireciona
+  // Se já estiver logado, não mostrar nada (evita piscar "Redirecionando...")
   if (user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Redirecionando...</p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return (

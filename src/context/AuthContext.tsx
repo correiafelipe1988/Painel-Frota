@@ -33,30 +33,44 @@ export function useAuth() {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [initialized, setInitialized] = useState(false);
+  const [initialCheckDone, setInitialCheckDone] = useState(false);
 
   useEffect(() => {
-    // Verificar se há um usuário salvo no localStorage
-    if (typeof window !== 'undefined' && !initialized) {
-      const savedUser = localStorage.getItem('firebase_user');
-      if (savedUser) {
-        try {
-          const userData = JSON.parse(savedUser);
-          // console.log('Found saved user in localStorage:', userData.email);
-        } catch (error) {
-          // console.error('Error parsing saved user:', error);
-          localStorage.removeItem('firebase_user');
+    let isMounted = true;
+
+    // Verificar localStorage primeiro para evitar redirecionamento desnecessário
+    const checkInitialAuth = () => {
+      if (typeof window !== 'undefined') {
+        const savedUser = localStorage.getItem('firebase_user');
+        if (savedUser) {
+          try {
+            const userData = JSON.parse(savedUser);
+            // console.log('Found saved user in localStorage:', userData.email);
+            // Não definir o user ainda, apenas indicar que há dados salvos
+            setInitialCheckDone(true);
+            return true;
+          } catch (error) {
+            console.warn('Error parsing saved user:', error);
+            localStorage.removeItem('firebase_user');
+          }
         }
       }
-      setInitialized(true);
-    }
+      setInitialCheckDone(true);
+      return false;
+    };
+
+    const hasStoredUser = checkInitialAuth();
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      // Verificar se o componente ainda está montado para evitar atualizações desnecessárias
+      if (!isMounted) return;
+      
       // console.log('Auth state changed:', user ? `User logged in: ${user.email}` : 'User logged out');
       setUser(user);
       setLoading(false);
+      setInitialCheckDone(true);
       
-      // Salvar/remover usuário do localStorage
+      // Salvar/remover usuário do localStorage de forma mais eficiente
       if (typeof window !== 'undefined') {
         if (user) {
           const userData = {
@@ -65,29 +79,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             displayName: user.displayName,
             photoURL: user.photoURL
           };
-          localStorage.setItem('firebase_user', JSON.stringify(userData));
-          // console.log('User data saved to localStorage:', userData.email);
+          try {
+            localStorage.setItem('firebase_user', JSON.stringify(userData));
+            // console.log('User data saved to localStorage:', userData.email);
+          } catch (error) {
+            console.warn('Failed to save user data to localStorage:', error);
+          }
         } else {
-          localStorage.removeItem('firebase_user');
-          // console.log('User data removed from localStorage');
+          try {
+            localStorage.removeItem('firebase_user');
+            // console.log('User data removed from localStorage');
+          } catch (error) {
+            console.warn('Failed to remove user data from localStorage:', error);
+          }
         }
       }
     }, (error) => {
+      if (!isMounted) return;
       console.error('Auth state change error:', error);
       setLoading(false);
+      setInitialCheckDone(true);
     });
 
-    // Timeout de segurança para evitar loading infinito
-    const timeout = setTimeout(() => {
-      // console.log('Auth timeout reached, setting loading to false');
-      setLoading(false);
-    }, 5000);
+    // Se não há usuário salvo, definir loading como false após um tempo
+    if (!hasStoredUser) {
+      const timeout = setTimeout(() => {
+        if (isMounted && !initialCheckDone) {
+          setLoading(false);
+          setInitialCheckDone(true);
+        }
+      }, 2000);
+
+      return () => {
+        isMounted = false;
+        unsubscribe();
+        clearTimeout(timeout);
+      };
+    }
 
     return () => {
+      isMounted = false;
       unsubscribe();
-      clearTimeout(timeout);
     };
-  }, [initialized]);
+  }, [initialCheckDone]);
 
   const signIn = async (email: string, password: string) => {
     try {

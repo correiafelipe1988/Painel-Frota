@@ -14,32 +14,35 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [isChecking, setIsChecking] = useState(true);
   const [hasRedirected, setHasRedirected] = useState(false);
+  const [shouldWait, setShouldWait] = useState(true);
 
   useEffect(() => {
-    // console.log('ProtectedRoute - loading:', loading, 'user:', !!user, 'isChecking:', isChecking);
+    // console.log('ProtectedRoute - loading:', loading, 'user:', !!user);
     
-    if (!loading) {
+    // Aguardar um pouco mais antes de redirecionar para dar tempo ao Firebase Auth
+    const waitTimer = setTimeout(() => {
+      setShouldWait(false);
+    }, 1500);
+
+    if (!loading && !shouldWait) {
       if (!user && !hasRedirected) {
         // console.log('No user found, redirecting to login...');
         setHasRedirected(true);
         router.replace('/login');
-      } else if (user) {
-        // console.log('User authenticated, showing content for:', user.email);
-        setIsChecking(false);
+      } else if (user && hasRedirected) {
+        // Reset redirect flag when user is authenticated
+        setHasRedirected(false);
       }
     }
-  }, [user, loading, router, hasRedirected]);
 
-  // Reset redirect flag when user changes
-  useEffect(() => {
-    if (user) {
-      setHasRedirected(false);
-    }
-  }, [user]);
+    return () => clearTimeout(waitTimer);
+  }, [user, loading, router, hasRedirected, shouldWait]);
 
-  if (loading || (isChecking && !hasRedirected)) {
+  // Verificar se há usuário salvo no localStorage para evitar tela de loading desnecessária
+  const hasStoredUser = typeof window !== 'undefined' && localStorage.getItem('firebase_user');
+
+  if (loading || (shouldWait && !hasStoredUser)) {
     return fallback || (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="w-full max-w-md">
@@ -65,8 +68,17 @@ export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
     );
   }
 
-  if (!user) {
+  // Se há usuário salvo, mostrar conteúdo imediatamente para evitar "piscamento"
+  if (hasStoredUser && shouldWait) {
+    return <>{children}</>;
+  }
+
+  if (!user && !hasRedirected) {
     return null;
+  }
+
+  if (!user && hasRedirected) {
+    return null; // Aguardando redirecionamento
   }
 
   return <>{children}</>;
