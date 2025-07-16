@@ -84,9 +84,9 @@ export default function FinanceiroPage() {
       // Para filtro por mês, consideramos todas as motos que estavam ativas no período
       // Não apenas as que tiveram movimentação no mês específico
       filtered = allMotorcycles.filter(moto => {
-        // Se não tem data de movimentação, incluir se está alugada/relocada
+        // Se não tem data de movimentação, incluir se está alugada
         if (!moto.data_ultima_mov) {
-          return moto.status === 'alugada' || moto.status === 'relocada';
+          return moto.status === 'alugada';
         }
         
         try {
@@ -100,8 +100,8 @@ export default function FinanceiroPage() {
           if (motoYear === targetYear && motoMonth === targetMonth) {
             return true; // Movimentação no período específico
           } else if (motoYear < targetYear || (motoYear === targetYear && motoMonth < targetMonth)) {
-            // Movimentação anterior ao período - incluir se está alugada/relocada
-            return moto.status === 'alugada' || moto.status === 'relocada';
+            // Movimentação anterior ao período - incluir se está alugada
+            return moto.status === 'alugada';
           }
           
           return false; // Movimentação posterior ao período

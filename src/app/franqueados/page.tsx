@@ -21,7 +21,6 @@ interface FranchiseeFleetStatus {
     alugada: number;
     active: number; // Disponível
     manutencao: number;
-    relocada: number;
   };
   totalGeral: number;
   percentLocadas: number;
@@ -114,7 +113,7 @@ export default function FranqueadosPage() {
     const representativeMotorcycles = Object.values(uniqueMotorcyclesByPlaca);
 
     const franchiseeStats: Record<string, {
-      counts: { [K in Exclude<MotorcycleStatus, 'recolhida' | 'inadimplente' | 'indisponivel_rastreador' | 'indisponivel_emplacamento'>]: number } & { indefinido: number };
+      counts: { [K in MotorcycleStatus]: number } & { indefinido: number };
       totalGeral: number;
     }> = {};
 
@@ -133,7 +132,13 @@ export default function FranqueadosPage() {
             active: 0,
             alugada: 0,
             manutencao: 0,
-            relocada: 0,
+            sucata: 0,
+            sinistro: 0,
+            furtada: 0,
+            apropriacao_indebita: 0,
+            nao_transferida: 0,
+            vendida: 0,
+            nao_localizada: 0,
             indefinido: 0,
           },
           totalGeral: 0,
@@ -141,10 +146,8 @@ export default function FranqueadosPage() {
       }
 
       const status = moto.status;
-      if (status && (status === 'active' || status === 'alugada' || status === 'manutencao' || status === 'relocada')) {
+      if (status && (status === 'active' || status === 'alugada' || status === 'manutencao' || status === 'sucata' || status === 'sinistro' || status === 'furtada' || status === 'apropriacao_indebita' || status === 'nao_transferida' || status === 'vendida' || status === 'nao_localizada')) {
         franchiseeStats[frName].counts[status]++;
-      } else if (status && (status === 'recolhida' || status === 'inadimplente' || status === 'indisponivel_rastreador' || status === 'indisponivel_emplacamento')) {
-        // Not displayed, but counted for total
       } else {
         franchiseeStats[frName].counts.indefinido++;
       }
@@ -152,7 +155,7 @@ export default function FranqueadosPage() {
     });
 
     const dataForTable: FranchiseeFleetStatus[] = Object.entries(franchiseeStats).map(([name, stats]) => {
-      const totalLocadasCount = stats.counts.alugada + stats.counts.relocada;
+      const totalLocadasCount = stats.counts.alugada;
       const percentLocadas = stats.totalGeral > 0 ? (totalLocadasCount / stats.totalGeral) * 100 : 0;
       const percentManutencao = stats.totalGeral > 0 ? (stats.counts.manutencao / stats.totalGeral) * 100 : 0;
       const percentDisponivel = stats.totalGeral > 0 ? (stats.counts.active / stats.totalGeral) * 100 : 0;
@@ -163,7 +166,6 @@ export default function FranqueadosPage() {
           alugada: stats.counts.alugada,
           active: stats.counts.active,
           manutencao: stats.counts.manutencao,
-          relocada: stats.counts.relocada,
         },
         totalGeral: stats.totalGeral,
         percentLocadas,
@@ -256,7 +258,6 @@ export default function FranqueadosPage() {
                     <TableHead className="text-right">Alugada</TableHead>
                     <TableHead className="text-right">Disponível</TableHead>
                     <TableHead className="text-right">Manutenção</TableHead>
-                    <TableHead className="text-right">Relocada</TableHead>
                     <TableHead className="text-right font-semibold">Total Geral</TableHead>
                     <TableHead className="text-right">
                       <div className="text-xs text-muted-foreground">Meta 91%</div>
@@ -279,7 +280,6 @@ export default function FranqueadosPage() {
                       <TableCell className="text-right">{item.counts.alugada}</TableCell>
                       <TableCell className="text-right">{item.counts.active}</TableCell>
                       <TableCell className="text-right">{item.counts.manutencao}</TableCell>
-                      <TableCell className="text-right">{item.counts.relocada}</TableCell>
                       <TableCell className="text-right font-bold">{item.totalGeral}</TableCell>
                       <TableCell
                         className={cn(

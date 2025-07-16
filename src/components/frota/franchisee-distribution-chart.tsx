@@ -53,7 +53,7 @@ export function FranchiseeDistributionChart({ motorcycles }: FranchiseeDistribut
         franchisee.models[modelKey] = (franchisee.models[modelKey] || 0) + 1;
       }
       
-      if (moto.status === 'alugada' || moto.status === 'relocada') {
+      if (moto.status === 'alugada') {
         franchisee.revenueGenerating++;
       }
     });

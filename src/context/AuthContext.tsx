@@ -34,6 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [initialCheckDone, setInitialCheckDone] = useState(false);
+  const [hasStoredAuth, setHasStoredAuth] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -45,8 +46,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (savedUser) {
           try {
             const userData = JSON.parse(savedUser);
-            // console.log('Found saved user in localStorage:', userData.email);
-            // Não definir o user ainda, apenas indicar que há dados salvos
+            console.log('Found saved user in localStorage:', userData.email);
+            // Para aplicações estáticas, aguardar mais tempo para o Firebase Auth
             setInitialCheckDone(true);
             return true;
           } catch (error) {
@@ -65,7 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Verificar se o componente ainda está montado para evitar atualizações desnecessárias
       if (!isMounted) return;
       
-      // console.log('Auth state changed:', user ? `User logged in: ${user.email}` : 'User logged out');
+      console.log('Auth state changed:', user ? `User logged in: ${user.email}` : 'User logged out');
       setUser(user);
       setLoading(false);
       setInitialCheckDone(true);
@@ -77,18 +78,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             uid: user.uid,
             email: user.email,
             displayName: user.displayName,
-            photoURL: user.photoURL
+            photoURL: user.photoURL,
+            timestamp: Date.now() // Adicionar timestamp para debug
           };
           try {
             localStorage.setItem('firebase_user', JSON.stringify(userData));
-            // console.log('User data saved to localStorage:', userData.email);
+            console.log('User data saved to localStorage:', userData.email);
           } catch (error) {
             console.warn('Failed to save user data to localStorage:', error);
           }
         } else {
           try {
             localStorage.removeItem('firebase_user');
-            // console.log('User data removed from localStorage');
+            console.log('User data removed from localStorage');
           } catch (error) {
             console.warn('Failed to remove user data from localStorage:', error);
           }
@@ -101,14 +103,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setInitialCheckDone(true);
     });
 
-    // Se não há usuário salvo, definir loading como false após um tempo
+    // Para aplicações estáticas, aguardar mais tempo antes de definir loading como false
     if (!hasStoredUser) {
       const timeout = setTimeout(() => {
         if (isMounted && !initialCheckDone) {
+          console.log('Timeout reached, setting loading to false');
           setLoading(false);
           setInitialCheckDone(true);
         }
-      }, 2000);
+      }, 3000); // Aumentado para 3 segundos
+
+      return () => {
+        isMounted = false;
+        unsubscribe();
+        clearTimeout(timeout);
+      };
+    } else {
+      // Se há usuário salvo, aguardar mais tempo para o Firebase Auth restaurar
+      const timeout = setTimeout(() => {
+        if (isMounted && !user) {
+          console.log('Stored user found but Firebase Auth not restored, setting loading to false');
+          setLoading(false);
+        }
+      }, 4000); // 4 segundos para usuários salvos
 
       return () => {
         isMounted = false;
@@ -121,7 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isMounted = false;
       unsubscribe();
     };
-  }, [initialCheckDone]);
+  }, [initialCheckDone, user]);
 
   const signIn = async (email: string, password: string) => {
     try {

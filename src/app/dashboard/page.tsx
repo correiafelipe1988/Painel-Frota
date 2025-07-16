@@ -8,7 +8,7 @@ import { KpiCard } from "@/components/dashboard/kpi-card";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LineChart, CalendarDays, TrendingUp, Bike, BarChart3, PieChart as PagePieIcon, Users, CheckCircle, ArrowRight, Wrench } from "lucide-react";
+import { LineChart, CalendarDays, TrendingUp, Bike, BarChart3, PieChart as PagePieIcon, Users, CheckCircle, ArrowRight, Wrench, MapPin } from "lucide-react";
 import type { Motorcycle, Kpi, MotorcycleStatus } from "@/lib/types";
 import { format, parseISO, isValid, getYear, getMonth, subDays, startOfDay, isSameDay, startOfMonth, endOfMonth } from 'date-fns';
 import { subscribeToMotorcycles } from '@/lib/firebase/motorcycleService';
@@ -16,6 +16,7 @@ import { StatusDistributionChart } from "@/components/charts/status-distribution
 import { BaseGrowthChart } from "@/components/charts/base-growth-chart";
 import { CombinedRentalChart } from "@/components/charts/combined-rental-chart";
 import { DailyRentalChart } from "@/components/charts/daily-rental-chart";
+import { FleetDistributionByStateChart } from "@/components/charts/fleet-distribution-by-state-chart";
 import { translateMotorcycleStatus } from "@/lib/utils";
 
 const currentYear = new Date().getFullYear();
@@ -267,6 +268,40 @@ const processMonthData = (motorcycles: Motorcycle[], selectedMonth: number, sele
     };
 };
 
+const processStateDistributionData = (motorcycles: Motorcycle[]) => {
+    const uniqueMotorcyclesByPlaca: { [placa: string]: Motorcycle } = {};
+    motorcycles.forEach(moto => {
+      if (!moto.placa) return;
+      const existingMoto = uniqueMotorcyclesByPlaca[moto.placa];
+      if (!existingMoto || (moto.data_ultima_mov && existingMoto.data_ultima_mov && new Date(moto.data_ultima_mov) > new Date(existingMoto.data_ultima_mov)) || (moto.data_ultima_mov && !existingMoto.data_ultima_mov)) {
+        uniqueMotorcyclesByPlaca[moto.placa] = moto;
+      }
+    });
+    
+    const representativeMotorcycles = Object.values(uniqueMotorcyclesByPlaca);
+    const totalMotorcycles = representativeMotorcycles.length;
+    
+    const stateCounts: Record<string, number> = {};
+    
+    representativeMotorcycles.forEach(moto => {
+        // Extrair UF da placa (primeiros 3 caracteres geralmente indicam a cidade/estado)
+        // Como não temos campo UF, vamos usar uma lógica baseada na placa ou franqueado
+        const state = moto.franqueado || 'N/D'; // Usando franqueado como proxy para UF
+        stateCounts[state] = (stateCounts[state] || 0) + 1;
+    });
+    
+    const stateDistributionData = Object.entries(stateCounts)
+        .map(([state, count]) => ({
+            state: state.length > 10 ? state.substring(0, 10) + '...' : state,
+            count,
+            percentage: totalMotorcycles > 0 ? (count / totalMotorcycles) * 100 : 0
+        }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10); // Top 10 estados/franqueados
+    
+    return stateDistributionData;
+};
+
 export default function DashboardPage() {
   const [currentTime, setCurrentTime] = useState('');
   const [allMotorcycles, setAllMotorcycles] = useState<Motorcycle[]>([]);
@@ -277,6 +312,7 @@ export default function DashboardPage() {
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [todayData, setTodayData] = useState<any>(null);
   const [monthData, setMonthData] = useState<any>(null);
+  const [stateDistributionData, setStateDistributionData] = useState<any>(null);
 
   useEffect(() => {
     const updateTimestamp = () => {
@@ -300,6 +336,7 @@ export default function DashboardPage() {
       setDailyRentalData(processDailyMotorcycleData(motorcyclesData));
       setTodayData(processTodayData(motorcyclesData));
       setMonthData(processMonthData(motorcyclesData, selectedMonth, selectedYear));
+      setStateDistributionData(processStateDistributionData(motorcyclesData));
       setIsLoading(false);
     });
     return () => {
@@ -343,7 +380,7 @@ export default function DashboardPage() {
           <Card className="border-l-4 border-l-blue-500 shadow-lg hover:shadow-xl transition-shadow duration-300">
             <CardContent className="p-4 flex justify-between items-center">
               <div>
-                <p className="text-sm text-muted-foreground font-medium">Motos Alugadas Hoje</p>
+                <p className="text-sm text-muted-foreground font-medium">Motos Alugadas</p>
                 <p className="text-2xl font-bold text-blue-500">{todayData.motosAlugadasHoje}</p>
                 <p className="text-xs text-muted-foreground">unidades</p>
               </div>
@@ -356,7 +393,7 @@ export default function DashboardPage() {
           <Card className="border-l-4 border-l-green-500 shadow-lg hover:shadow-xl transition-shadow duration-300">
             <CardContent className="p-4 flex justify-between items-center">
               <div>
-                <p className="text-sm text-muted-foreground font-medium">Motos Recuperadas Hoje</p>
+                <p className="text-sm text-muted-foreground font-medium">Motos Disponíveis</p>
                 <p className="text-2xl font-bold text-green-500">{todayData.motosRecuperadasHoje}</p>
                 <p className="text-xs text-muted-foreground">unidades</p>
               </div>
@@ -366,27 +403,27 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-l-4 border-l-gray-400 shadow-lg hover:shadow-xl transition-shadow duration-300">
+          <Card className="border-l-4 border-l-yellow-500 shadow-lg hover:shadow-xl transition-shadow duration-300">
             <CardContent className="p-4 flex justify-between items-center">
               <div>
-                <p className="text-sm text-muted-foreground font-medium">Motos Relocadas Hoje</p>
-                <p className="text-2xl font-bold text-gray-600">{todayData.motosRelocadasHoje}</p>
+                <p className="text-sm text-muted-foreground font-medium">Não Transferidas</p>
+                <p className="text-2xl font-bold text-yellow-600">{todayData.motosRelocadasHoje}</p>
                 <p className="text-xs text-muted-foreground">unidades</p>
               </div>
-              <div className="p-3 rounded-lg bg-gray-400">
+              <div className="p-3 rounded-lg bg-yellow-500">
                 <ArrowRight className="h-6 w-6 text-white" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-l-4 border-l-violet-500 shadow-lg hover:shadow-xl transition-shadow duration-300">
+          <Card className="border-l-4 border-l-red-500 shadow-lg hover:shadow-xl transition-shadow duration-300">
             <CardContent className="p-4 flex justify-between items-center">
               <div>
-                <p className="text-sm text-muted-foreground font-medium">Motos em Manutenção</p>
-                <p className="text-2xl font-bold text-violet-500">{todayData.motosEmManutencao}</p>
+                <p className="text-sm text-muted-foreground font-medium">Não Localizadas</p>
+                <p className="text-2xl font-bold text-red-500">{todayData.motosEmManutencao}</p>
                 <p className="text-xs text-muted-foreground">unidades</p>
               </div>
-              <div className="p-3 rounded-lg bg-violet-500">
+              <div className="p-3 rounded-lg bg-red-500">
                 <Wrench className="h-6 w-6 text-white" />
               </div>
             </CardContent>
@@ -454,27 +491,27 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-l-4 border-l-gray-400 shadow-lg hover:shadow-xl transition-shadow duration-300">
+          <Card className="border-l-4 border-l-yellow-500 shadow-lg hover:shadow-xl transition-shadow duration-300">
             <CardContent className="p-4 flex justify-between items-center">
               <div>
-                <p className="text-sm text-muted-foreground font-medium">Motos Relocadas</p>
-                <p className="text-2xl font-bold text-gray-600">{monthData.motosRelocadas}</p>
+                <p className="text-sm text-muted-foreground font-medium">Não Transferidas</p>
+                <p className="text-2xl font-bold text-yellow-600">{monthData.motosRelocadas}</p>
                 <p className="text-xs text-muted-foreground">em {monthNames[selectedMonth]}/{selectedYear}</p>
               </div>
-              <div className="p-3 rounded-lg bg-gray-400">
+              <div className="p-3 rounded-lg bg-yellow-500">
                 <ArrowRight className="h-6 w-6 text-white" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-l-4 border-l-violet-500 shadow-lg hover:shadow-xl transition-shadow duration-300">
+          <Card className="border-l-4 border-l-red-500 shadow-lg hover:shadow-xl transition-shadow duration-300">
             <CardContent className="p-4 flex justify-between items-center">
               <div>
-                <p className="text-sm text-muted-foreground font-medium">Em Manutenção</p>
-                <p className="text-2xl font-bold text-violet-500">{monthData.emManutencao}</p>
+                <p className="text-sm text-muted-foreground font-medium">Não Localizadas</p>
+                <p className="text-2xl font-bold text-red-500">{monthData.emManutencao}</p>
                 <p className="text-xs text-muted-foreground">em {monthNames[selectedMonth]}/{selectedYear}</p>
               </div>
-              <div className="p-3 rounded-lg bg-violet-500">
+              <div className="p-3 rounded-lg bg-red-500">
                 <Wrench className="h-6 w-6 text-white" />
               </div>
             </CardContent>
@@ -497,10 +534,24 @@ export default function DashboardPage() {
           <Card className="shadow-lg lg:col-span-2">
             <CardHeader>
                 <div className="flex items-center gap-2">
+                    <MapPin className="h-6 w-6 text-purple-600" />
+                    <div>
+                        <CardTitle className="font-headline">Distribuição da Frota por UF</CardTitle>
+                        <CardDescription>Quantidade de motocicletas por estado/região (Top 10).</CardDescription>
+                    </div>
+                </div>
+            </CardHeader>
+            <CardContent>
+                <FleetDistributionByStateChart data={stateDistributionData || []} />
+            </CardContent>
+          </Card>
+          <Card className="shadow-lg lg:col-span-2">
+            <CardHeader>
+                <div className="flex items-center gap-2">
                     <Bike className="h-6 w-6 text-blue-600" />
                     <div>
                         <CardTitle className="font-headline">Análise Mensal de Locações ({currentYear})</CardTitle>
-                        <CardDescription>Volume de motos alugadas e relocadas (barras) e o total de locações (linha).</CardDescription>
+                        <CardDescription>Volume de motos novas e usadas (barras) e o total de locações (linha).</CardDescription>
                     </div>
                 </div>
             </CardHeader>
@@ -514,7 +565,7 @@ export default function DashboardPage() {
                     <Bike className="h-6 w-6 text-green-600" />
                     <div>
                         <CardTitle className="font-headline">Análise Diária de Locações (Últimos 30 Dias)</CardTitle>
-                        <CardDescription>Volume de motos alugadas e relocadas (barras) e o total de locações (linha).</CardDescription>
+                        <CardDescription>Volume de motos novas e usadas (barras) e o total de locações (linha).</CardDescription>
                     </div>
                 </div>
             </CardHeader>

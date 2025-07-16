@@ -54,15 +54,14 @@ const processMotorcycleData = (motorcycles: Motorcycle[], year: number) => {
     const totalUniqueMotorcycles = representativeMotorcycles.length;
 
     const motosAlugadasCount = representativeMotorcycles.filter(m => m.status === 'alugada').length;
-    const motosRelocadasCount = representativeMotorcycles.filter(m => m.status === 'relocada').length;
-    const totalLocacoesCount = motosAlugadasCount + motosRelocadasCount;
+    const totalLocacoesCount = motosAlugadasCount;
     const taxaLocacoes = totalUniqueMotorcycles > 0 ? (totalLocacoesCount / totalUniqueMotorcycles) * 100 : 0;
 
     // Aggregate 'alugada' and 'relocada' into 'locadas'
     const statusCounts: Record<string, number> = {};
     representativeMotorcycles.forEach(moto => {
       const statusKey = moto.status || 'N/Definido';
-      if (statusKey === 'alugada' || statusKey === 'relocada') {
+      if (statusKey === 'alugada') {
         statusCounts['locadas'] = (statusCounts['locadas'] || 0) + 1;
       } else {
         statusCounts[statusKey] = (statusCounts[statusKey] || 0) + 1;
@@ -92,9 +91,7 @@ const processMotorcycleData = (motorcycles: Motorcycle[], year: number) => {
                 const movDate = parseISO(moto.data_ultima_mov);
                 if (isValid(movDate) && getYear(movDate) === year) {
                     const monthIndex = getMonth(movDate);
-                    if (moto.status === 'recolhida') recoveryCounts[monthIndex]++;
                     if (moto.status === 'alugada') rentalCounts[monthIndex]++;
-                    if (moto.status === 'relocada') relocatedCounts[monthIndex]++;
                 }
             } catch (e) { console.error("Error parsing date for motorcycle charts: ", moto.data_ultima_mov, e); }
         }

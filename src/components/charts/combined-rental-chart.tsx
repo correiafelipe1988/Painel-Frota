@@ -43,17 +43,11 @@ export function CombinedRentalChart({ data }: CombinedRentalChartProps) {
         />
         <Legend verticalAlign="top" wrapperStyle={{top: 0}} />
 
-        <Bar dataKey="alugadas" name="Alugadas" stackId="a" fill="hsl(221.2 83.2% 53.3%)" radius={[0, 0, 0, 0]}>
+        <Bar dataKey="alugadas" name="Nova" stackId="a" fill="hsl(221.2 83.2% 53.3%)" radius={[0, 0, 0, 0]}>
            <LabelList dataKey="alugadas" position="center" style={{ fontSize: '12px', fill: 'white', fontWeight: 'bold' }} formatter={formatCount} />
         </Bar>
-        <Bar dataKey="relocadas" name="Relocadas" stackId="a" fill="hsl(142.1 76.2% 36.3%)" radius={[4, 4, 0, 0]}>
+        <Bar dataKey="relocadas" name="Usada" stackId="a" fill="hsl(142.1 76.2% 36.3%)" radius={[4, 4, 0, 0]}>
            <LabelList dataKey="relocadas" position="center" style={{ fontSize: '12px', fill: 'white', fontWeight: 'bold' }} formatter={formatCount} />
-           <LabelList 
-             dataKey="total" 
-             position="top" 
-             style={{ fontSize: '12px', fill: 'hsl(221.2 83.2% 53.3%)', fontWeight: 'bold' }} 
-             formatter={formatCount} 
-            />
         </Bar>
         
         <Line 

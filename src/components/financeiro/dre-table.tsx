@@ -102,7 +102,7 @@ export function DRETable({ motorcycles, selectedYear }: DRETableProps) {
       // Filtrar motos por mês
       const monthMotorcycles = motorcycles.filter(moto => {
         if (!moto.data_ultima_mov) {
-          return moto.status === 'alugada' || moto.status === 'relocada';
+          return moto.status === 'alugada';
         }
         
         try {
@@ -113,7 +113,7 @@ export function DRETable({ motorcycles, selectedYear }: DRETableProps) {
           if (motoYear === year && motoMonth === month) {
             return true;
           } else if (motoYear < year || (motoYear === year && motoMonth < month)) {
-            return moto.status === 'alugada' || moto.status === 'relocada';
+            return moto.status === 'alugada' || false;
           }
           
           return false;
@@ -156,7 +156,7 @@ export function DRETable({ motorcycles, selectedYear }: DRETableProps) {
       }).length;
 
       const relocatedMotorcycles = filteredMotorcycles.filter(moto => {
-        if (moto.status !== 'relocada' || !moto.data_ultima_mov) return false;
+        if (!moto.data_ultima_mov) return false;
         
         try {
           const motoDate = new Date(moto.data_ultima_mov);
@@ -190,7 +190,7 @@ export function DRETable({ motorcycles, selectedYear }: DRETableProps) {
           
           // Só somar caução se foi alugada/relocada neste mês específico
           if (motoYear === year && motoMonth === month &&
-              (moto.status === 'alugada' || moto.status === 'relocada')) {
+              (moto.status === 'alugada' || false)) {
             return sum + (moto.caucao || 0);
           }
           
@@ -578,7 +578,7 @@ export function DRETable({ motorcycles, selectedYear }: DRETableProps) {
                     const totalMotorcycles = dreData.reduce((total, month) => {
                       const uniquePlates = new Set(motorcycles.filter(moto => {
                         if (!moto.data_ultima_mov) {
-                          return moto.status === 'alugada' || moto.status === 'relocada';
+                          return moto.status === 'alugada' || false;
                         }
                         
                         try {
@@ -589,7 +589,7 @@ export function DRETable({ motorcycles, selectedYear }: DRETableProps) {
                           if (motoYear === parseInt(selectedYear) && motoMonth === month.monthNumber) {
                             return true;
                           } else if (motoYear < parseInt(selectedYear) || (motoYear === parseInt(selectedYear) && motoMonth < month.monthNumber)) {
-                            return moto.status === 'alugada' || moto.status === 'relocada';
+                            return moto.status === 'alugada' || false;
                           }
                           
                           return false;

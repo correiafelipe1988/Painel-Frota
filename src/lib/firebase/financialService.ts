@@ -55,8 +55,8 @@ function calculateProportionalRevenue(
     return weeklyValue;
   }
 
-  // Se não está alugada/relocada, não gera receita
-  if (moto.status !== 'alugada' && moto.status !== 'relocada') {
+  // Se não está alugada, não gera receita
+  if (moto.status !== 'alugada') {
     return 0;
   }
 
@@ -142,7 +142,7 @@ export function calculateFranchiseeRevenue(motorcycles: Motorcycle[], targetYear
 
   // 3. Filtrar motos alugadas/relocadas
   const allRentedMotorcycles = representativeMotorcycles.filter(moto =>
-    (moto.status === 'alugada' || moto.status === 'relocada') &&
+    (moto.status === 'alugada') &&
     moto.franqueado &&
     moto.franqueado.trim() !== ''
   );
@@ -273,7 +273,7 @@ export function calculateMonthlyRevenueAnalysis(motorcycles: Motorcycle[], year:
     const monthMotorcycles = motorcycles.filter(moto => {
       // Se não tem data de movimentação, incluir se está alugada/relocada
       if (!moto.data_ultima_mov) {
-        return moto.status === 'alugada' || moto.status === 'relocada';
+        return moto.status === 'alugada';
       }
       
       try {
@@ -288,7 +288,7 @@ export function calculateMonthlyRevenueAnalysis(motorcycles: Motorcycle[], year:
           return true; // Movimentação no período específico
         } else if (motoYear < year || (motoYear === year && motoMonth < targetMonth)) {
           // Movimentação anterior ao período - incluir se está alugada/relocada
-          return moto.status === 'alugada' || moto.status === 'relocada';
+          return moto.status === 'alugada';
         }
         
         return false; // Movimentação posterior ao período
@@ -313,7 +313,7 @@ export function calculateMonthlyRevenueAnalysis(motorcycles: Motorcycle[], year:
     
     // Filtrar apenas motos alugadas/relocadas (mesma lógica dos KPIs)
     const rentedMotorcycles = representativeMotorcycles.filter(moto =>
-      (moto.status === 'alugada' || moto.status === 'relocada') &&
+      (moto.status === 'alugada') &&
       moto.franqueado &&
       moto.franqueado.trim() !== ''
     );
@@ -368,7 +368,7 @@ export function calculateSeasonalAnalysis(motorcycles: Motorcycle[]): { month: s
   
   motorcycles.forEach(moto => {
     if (!moto.data_ultima_mov || !moto.valorSemanal || 
-        (moto.status !== 'alugada' && moto.status !== 'relocada')) return;
+        (moto.status !== 'alugada')) return;
     
     try {
       const motoDate = parseISO(moto.data_ultima_mov);
@@ -456,7 +456,7 @@ export function diagnoseFranchiseeDiscrepancies(motorcycles: Motorcycle[], franc
 
   // 4. Categorizar as motos
   const rentedMotorcycles = franchiseeMotorcycles.filter(
-    moto => moto.status === 'alugada' || moto.status === 'relocada'
+    moto => moto.status === 'alugada'
   );
 
   const revenueGeneratingMotorcycles = rentedMotorcycles.filter(
@@ -509,7 +509,7 @@ export function calculateMonthlyRevenueForDRE(motorcycles: Motorcycle[], year: n
   // Filtrar motos por mês (mesma lógica do DRE)
   const monthMotorcycles = motorcycles.filter(moto => {
     if (!moto.data_ultima_mov) {
-      return moto.status === 'alugada' || moto.status === 'relocada';
+      return moto.status === 'alugada';
     }
     
     try {
@@ -520,7 +520,7 @@ export function calculateMonthlyRevenueForDRE(motorcycles: Motorcycle[], year: n
       if (motoYear === year && motoMonth === month) {
         return true;
       } else if (motoYear < year || (motoYear === year && motoMonth < month)) {
-        return moto.status === 'alugada' || moto.status === 'relocada';
+        return moto.status === 'alugada';
       }
       
       return false;
@@ -573,7 +573,7 @@ function calculateMonthlyDREData(motorcycles: Motorcycle[], year: number, month:
   // Filtrar motos por mês (mesma lógica do DRE)
   const monthMotorcycles = motorcycles.filter(moto => {
     if (!moto.data_ultima_mov) {
-      return moto.status === 'alugada' || moto.status === 'relocada';
+      return moto.status === 'alugada';
     }
     
     try {
@@ -584,7 +584,7 @@ function calculateMonthlyDREData(motorcycles: Motorcycle[], year: number, month:
       if (motoYear === year && motoMonth === month) {
         return true;
       } else if (motoYear < year || (motoYear === year && motoMonth < month)) {
-        return moto.status === 'alugada' || moto.status === 'relocada';
+        return moto.status === 'alugada';
       }
       
       return false;
@@ -613,7 +613,7 @@ function calculateMonthlyDREData(motorcycles: Motorcycle[], year: number, month:
   }).length;
 
   const relocatedMotorcycles = monthMotorcycles.filter(moto => {
-    if (moto.status !== 'relocada' || !moto.data_ultima_mov) return false;
+    if (moto.status !== 'alugada' || !moto.data_ultima_mov) return false;
     
     try {
       const motoDate = new Date(moto.data_ultima_mov);

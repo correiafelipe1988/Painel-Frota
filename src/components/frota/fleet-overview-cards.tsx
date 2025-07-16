@@ -42,7 +42,7 @@ export function FleetOverviewCards({ motorcycles, isLoading = false }: FleetOver
   const uniqueFranchisees = new Set(motorcycles.filter(m => m.franqueado).map(m => m.franqueado!.trim())).size;
   
   const revenueGeneratingMotorcycles = motorcycles.filter(m => 
-    (m.status === 'alugada' || m.status === 'relocada') && m.valorSemanal && m.valorSemanal > 0
+    m.status === 'alugada' && m.valorSemanal && m.valorSemanal > 0
   );
   
   const totalWeeklyRevenue = revenueGeneratingMotorcycles.reduce((sum, m) => sum + (m.valorSemanal || 0), 0);

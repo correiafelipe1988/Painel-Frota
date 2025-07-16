@@ -18,8 +18,6 @@ interface ModelData {
   alugadas: number;
   active: number;
   manutencao: number;
-  recolhida: number;
-  relocada: number;
   totalRevenue: number;
   averageTicket: number;
   occupationRate: number;
@@ -45,8 +43,6 @@ export function ModelAnalysisTable({ motorcycles, compact = false }: ModelAnalys
           alugadas: 0,
           active: 0,
           manutencao: 0,
-          recolhida: 0,
-          relocada: 0,
           totalRevenue: 0,
           averageTicket: 0,
           occupationRate: 0,
@@ -68,16 +64,10 @@ export function ModelAnalysisTable({ motorcycles, compact = false }: ModelAnalys
         case 'manutencao':
           model.manutencao++;
           break;
-        case 'recolhida':
-          model.recolhida++;
-          break;
-        case 'relocada':
-          model.relocada++;
-          break;
       }
       
       // Calcular receita
-      if ((moto.status === 'alugada' || moto.status === 'relocada') && moto.valorSemanal) {
+      if (moto.status === 'alugada' && moto.valorSemanal) {
         model.totalRevenue += moto.valorSemanal;
       }
       
@@ -89,7 +79,7 @@ export function ModelAnalysisTable({ motorcycles, compact = false }: ModelAnalys
     
     // Calcular métricas finais
     Object.values(models).forEach(model => {
-      const revenueGenerating = model.alugadas + model.relocada;
+      const revenueGenerating = model.alugadas;
       model.averageTicket = revenueGenerating > 0 ? model.totalRevenue / revenueGenerating : 0;
       model.occupationRate = model.total > 0 ? (revenueGenerating / model.total) * 100 : 0;
     });
@@ -137,8 +127,6 @@ export function ModelAnalysisTable({ motorcycles, compact = false }: ModelAnalys
             <TableHead className="text-center">Alugadas</TableHead>
             <TableHead className="text-center">Disponíveis</TableHead>
             <TableHead className="text-center">Manutenção</TableHead>
-            <TableHead className="text-center">Relocadas</TableHead>
-            <TableHead className="text-center">Recolhidas</TableHead>
             <TableHead className="text-center">Taxa Ocupação</TableHead>
             <TableHead className="text-center">Ticket Médio</TableHead>
             <TableHead className="text-center">Receita Semanal</TableHead>
@@ -167,16 +155,6 @@ export function ModelAnalysisTable({ motorcycles, compact = false }: ModelAnalys
               <TableCell className="text-center">
                 <Badge className="bg-purple-100 text-purple-700">
                   {model.manutencao}
-                </Badge>
-              </TableCell>
-              <TableCell className="text-center">
-                <Badge className="bg-gray-100 text-gray-700">
-                  {model.relocada}
-                </Badge>
-              </TableCell>
-              <TableCell className="text-center">
-                <Badge className="bg-orange-100 text-orange-700">
-                  {model.recolhida}
                 </Badge>
               </TableCell>
               <TableCell className="text-center">

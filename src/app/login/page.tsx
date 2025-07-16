@@ -30,9 +30,17 @@ export default function LoginPage() {
       await signIn(email, password);
       console.log('Login successful, redirecting...');
       
+      // Verificar se há uma URL salva para redirecionamento
+      const redirectPath = typeof window !== 'undefined' ? localStorage.getItem('redirect_after_login') : null;
+      
       // Aguardar um pouco para garantir que o estado foi atualizado
       setTimeout(() => {
-        router.push('/dashboard');
+        if (redirectPath) {
+          localStorage.removeItem('redirect_after_login');
+          router.push(redirectPath);
+        } else {
+          router.push('/dashboard');
+        }
       }, 500);
       
     } catch (error) {

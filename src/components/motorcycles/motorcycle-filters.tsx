@@ -24,12 +24,14 @@ const statusOptions: { value: MotorcycleStatus | 'all'; label: string }[] = [
   { value: 'all', label: 'Todos os Status' },
   { value: 'active', label: 'Ativa' },
   { value: 'alugada', label: 'Alugada' },
-  { value: 'inadimplente', label: 'Inadimplente' },
-  { value: 'recolhida', label: 'Recolhida' },
-  { value: 'relocada', label: 'Relocada' },
   { value: 'manutencao', label: 'Manutenção' },
-  { value: 'indisponivel_rastreador', label: 'Indisponível Rastreador' },
-  { value: 'indisponivel_emplacamento', label: 'Indisponível Emplacamento' },
+  { value: 'sucata', label: 'Sucata' },
+  { value: 'sinistro', label: 'Sinistro' },
+  { value: 'furtada', label: 'Furtada' },
+  { value: 'apropriacao_indebita', label: 'Apropriação Indébita' },
+  { value: 'nao_transferida', label: 'Não Transferida' },
+  { value: 'vendida', label: 'Vendida' },
+  { value: 'nao_localizada', label: 'Não Localizada' },
 ];
 
 // Model options matching the add motorcycle form

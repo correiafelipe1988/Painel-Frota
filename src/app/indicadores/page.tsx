@@ -43,7 +43,7 @@ export default function IndicadoresPage() {
           if (!moto.data_ultima_mov || !moto.status) return false;
           // Verifica se a última movimentação foi neste dia E se o status é 'alugada' ou 'relocada'
           // Isso conta motos que se tornaram alugadas/relocadas naquele dia.
-          return moto.data_ultima_mov === formattedDate && (moto.status === 'alugada' || moto.status === 'relocada');
+          return moto.data_ultima_mov === formattedDate && moto.status === 'alugada';
         }).length;
         totalLocacoesNoPeriodo += locacoesNoDia;
       });

@@ -10,14 +10,16 @@ export function cn(...inputs: ClassValue[]) {
 export const translateMotorcycleStatus = (status?: MotorcycleStatus): string => {
   if (!status) return 'N/Definido';
   switch (status) {
-    case 'active': return 'Disponível';
+    case 'active': return 'Ativa';
     case 'alugada': return 'Alugada';
-    case 'inadimplente': return 'Inadimplente';
     case 'manutencao': return 'Manutenção';
-    case 'recolhida': return 'Recolhida';
-    case 'relocada': return 'Relocada';
-    case 'indisponivel_rastreador': return 'Indisponível Rastreador';
-    case 'indisponivel_emplacamento': return 'Indisponível Emplacamento';
+    case 'sucata': return 'Sucata';
+    case 'sinistro': return 'Sinistro';
+    case 'furtada': return 'Furtada';
+    case 'apropriacao_indebita': return 'Apropriação Indébita';
+    case 'nao_transferida': return 'Não Transferida';
+    case 'vendida': return 'Vendida';
+    case 'nao_localizada': return 'Não Localizada';
     default:
       const s = status as string;
       return s.charAt(0).toUpperCase() + s.slice(1);

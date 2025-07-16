@@ -53,7 +53,7 @@ export function ModelPerformanceChart({ motorcycles }: ModelPerformanceChartProp
       model.totalMotorcycles++;
       
       // Contar motos gerando receita
-      if (moto.status === 'alugada' || moto.status === 'relocada') {
+      if (moto.status === 'alugada') {
         model.revenueGenerating++;
         
         // Somar receita
