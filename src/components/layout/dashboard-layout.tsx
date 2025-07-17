@@ -1,4 +1,4 @@
-"use client";
+  "use client";
 
 import Link from "next/link";
 import Image from "next/image";
@@ -30,7 +30,7 @@ import { useAuth } from '@/context/AuthContext';
 const navItems: NavItem[] = [
   { href: "/", label: "Dashboard", subLabel: "Visão geral", icon: LayoutDashboard },
   { href: "/motorcycles", label: "Gestão de Motos", subLabel: "Frota completa", icon: ListFilter },
-  { href: "/projecao-motos", label: "Projeção de Locações", subLabel: "Meta 800 locações", icon: TrendingUp },
+  { href: "/projecao-motos", label: "Projeção de Locações", subLabel: "Meta 300 locações", icon: TrendingUp },
   { href: "/franqueados", label: "Franqueados", subLabel: "Análise por franqueado", icon: Users },
   { href: "/financeiro", label: "Financeiro", subLabel: "Receitas e análises", icon: DollarSign },
   { href: "/predict-idle", label: "Previsão de Ociosidade", subLabel: "IA para tempo ocioso", icon: BarChart3 },
