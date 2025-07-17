@@ -8,10 +8,6 @@ const nextConfig: NextConfig = {
   },
   distDir: 'out',
   assetPrefix: '',
-  // Configuração para SPA
-  experimental: {
-    missingSuspenseWithCSRBailout: false,
-  },
 };
 
 export default nextConfig;

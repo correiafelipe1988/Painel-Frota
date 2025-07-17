@@ -22,6 +22,9 @@ interface ModelData {
   naoLocalizada: number;
   sinistro: number;
   franchisees: Set<string>;
+  totalRevenue: number;
+  averageTicket: number;
+  occupationRate: number;
 }
 
 const formatCurrency = (value: number) => 
@@ -46,7 +49,10 @@ export function ModelAnalysisTable({ motorcycles, compact = false }: ModelAnalys
           naoTransferida: 0,
           naoLocalizada: 0,
           sinistro: 0,
-          franchisees: new Set()
+          franchisees: new Set(),
+          totalRevenue: 0,
+          averageTicket: 0,
+          occupationRate: 0
         };
       }
       

@@ -28,7 +28,7 @@ import { subscribeToMotorcycles } from '@/lib/firebase/motorcycleService';
 import { useAuth } from '@/context/AuthContext';
 
 const navItems: NavItem[] = [
-  { href: "/", label: "Dashboard", subLabel: "Visão geral", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Dashboard", subLabel: "Visão geral", icon: LayoutDashboard },
   { href: "/motorcycles", label: "Gestão de Motos", subLabel: "Frota completa", icon: ListFilter },
   { href: "/projecao-motos", label: "Projeção de Locações", subLabel: "Meta 300 locações", icon: TrendingUp },
   { href: "/franqueados", label: "Franqueados", subLabel: "Análise por franqueado", icon: Users },
@@ -51,14 +51,14 @@ const initialStatusRapidoItems: StatusRapidoItemType[] = [
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
   const [allMotorcycles, setAllMotorcycles] = useState<Motorcycle[]>([]);
   const [dynamicStatusRapidoItems, setDynamicStatusRapidoItems] = useState<StatusRapidoItemType[]>(initialStatusRapidoItems);
   const [isLoadingStatus, setIsLoadingStatus] = useState(true);
 
   const handleLogout = async () => {
     try {
-      await logout();
+      await signOut();
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
     }
