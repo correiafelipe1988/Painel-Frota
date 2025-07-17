@@ -1,12 +1,15 @@
 // Sistema de permissões do aplicativo
-// Por enquanto, apenas um usuário específico tem acesso completo
+// Lista de UIDs autorizados para acesso completo
 
-export const AUTHORIZED_ADMIN_UID = "8tCMf5ksCIQGck1bkkYkS4iQDZQ2";
+export const AUTHORIZED_ADMIN_UIDS = [
+  "8tCMf5ksCIQGck1bkkYkS4iQDZQ2", // Usuário original
+  "mUnQ1UsIJBTjtwzcfGIF8Lg4jtz1"  // Novo usuário autorizado
+];
 
 // Verifica se o usuário tem permissão de administrador completo
 export const isAuthorizedAdmin = (userUid: string | null | undefined): boolean => {
   if (!userUid) return false;
-  return userUid === AUTHORIZED_ADMIN_UID;
+  return AUTHORIZED_ADMIN_UIDS.includes(userUid);
 };
 
 // Lista de rotas que requerem permissão de admin
