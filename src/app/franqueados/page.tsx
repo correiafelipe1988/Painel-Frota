@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -41,6 +40,59 @@ interface FranchiseeFleetStatus {
   percentNaoLocalizada: number;
 }
 
+// Função para calcular KPIs
+const calculateKPIs = (data: FranchiseeFleetStatus[]) => {
+  if (data.length === 0) {
+    return {
+      totalFranqueados: 0,
+      totalMotos: 0,
+      melhorFranqueado: null,
+      taxaMediaOcupacao: 0,
+      franqueadoMaisMotos: null
+    };
+  }
+
+  const totalMotos = data.reduce((sum, item) => sum + item.totalGeral, 0);
+  const totalAlugadas = data.reduce((sum, item) => sum + item.counts.alugada, 0);
+  const taxaMediaOcupacao = totalMotos > 0 ? (totalAlugadas / totalMotos) * 100 : 0;
+  
+  const melhorFranqueado = data.reduce((prev, current) => 
+    current.percentLocadas > prev.percentLocadas ? current : prev
+  );
+  
+  const franqueadoMaisMotos = data.reduce((prev, current) => 
+    current.totalGeral > prev.totalGeral ? current : prev
+  );
+
+  return {
+    totalFranqueados: data.length,
+    totalMotos,
+    melhorFranqueado,
+    taxaMediaOcupacao,
+    franqueadoMaisMotos
+  };
+};
+
+// Função para obter cor do badge baseada no status
+const getStatusBadgeProps = (status: string, count: number) => {
+  if (count === 0) return { variant: "outline" as const, text: "0" };
+  
+  switch (status) {
+    case 'alugada':
+      return { variant: "success" as const, text: count.toString() };
+    case 'active':
+      return { variant: "info" as const, text: count.toString() };
+    case 'manutencao':
+      return { variant: "warning" as const, text: count.toString() };
+    case 'sinistro':
+    case 'sucata':
+    case 'nao_localizada':
+      return { variant: "destructive" as const, text: count.toString() };
+    default:
+      return { variant: "secondary" as const, text: count.toString() };
+  }
+};
+
 export default function FranqueadosPage() {
   const [allMotorcycles, setAllMotorcycles] = useState<Motorcycle[]>([]);
   const [processedData, setProcessedData] = useState<FranchiseeFleetStatus[]>([]);
@@ -51,6 +103,26 @@ export default function FranqueadosPage() {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [franchisees, setFranchisees] = useState<string[]>([]);
+  
+  // KPIs calculados
+  const kpis = calculateKPIs(processedData);
+  
+  // Dados para gráficos
+  const chartData = processedData.map(item => ({
+    name: item.franqueadoName,
+    alugadas: item.counts.alugada,
+    disponiveis: item.counts.active,
+    manutencao: item.counts.manutencao,
+    percentLocadas: item.percentLocadas
+  }));
+  
+  const pieChartData = [
+    { name: 'Alugadas', value: processedData.reduce((sum, item) => sum + item.counts.alugada, 0), fill: 'hsl(var(--chart-1))' },
+    { name: 'Disponíveis', value: processedData.reduce((sum, item) => sum + item.counts.active, 0), fill: 'hsl(var(--chart-2))' },
+    { name: 'Manutenção', value: processedData.reduce((sum, item) => sum + item.counts.manutencao, 0), fill: 'hsl(var(--chart-3))' },
+    { name: 'Sucata', value: processedData.reduce((sum, item) => sum + item.counts.sucata, 0), fill: 'hsl(var(--chart-4))' },
+    { name: 'Sinistro', value: processedData.reduce((sum, item) => sum + item.counts.sinistro, 0), fill: 'hsl(var(--chart-5))' }
+  ].filter(item => item.value > 0);
 
 
   useEffect(() => {
@@ -197,6 +269,26 @@ export default function FranqueadosPage() {
 
     setProcessedData(dataForTable);
   }, [allMotorcycles, isLoading, selectedFranchisee, startDate, endDate]);
+  
+  // Função para renderizar barra de progresso com cor
+  const renderProgressBar = (percentage: number, variant: 'success' | 'warning' | 'destructive' | 'info' = 'info') => {
+    const colorClasses = {
+      success: 'bg-green-500',
+      warning: 'bg-yellow-500', 
+      destructive: 'bg-red-500',
+      info: 'bg-blue-500'
+    };
+    
+    return (
+      <div className="flex items-center gap-2">
+        <div className="w-16 text-xs text-right">{percentage.toFixed(1)}%</div>
+        <Progress 
+          value={percentage} 
+          className="w-20 h-2"
+        />
+      </div>
+    );
+  };
 
   return (
     <DashboardLayout>
@@ -206,6 +298,65 @@ export default function FranqueadosPage() {
         icon={Users}
         iconContainerClassName="bg-primary"
       />
+      
+      {/* Cards de KPIs */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+        <Card className="border-l-4 border-l-blue-500">
+          <CardContent className="p-4 flex justify-between items-center">
+            <div>
+              <p className="text-sm text-muted-foreground font-medium">Total Franqueados</p>
+              <p className="text-2xl font-bold text-blue-500">{kpis.totalFranqueados}</p>
+              <p className="text-xs text-muted-foreground">ativos</p>
+            </div>
+            <div className="p-3 rounded-lg bg-blue-500">
+              <Users className="h-6 w-6 text-white" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="border-l-4 border-l-green-500">
+          <CardContent className="p-4 flex justify-between items-center">
+            <div>
+              <p className="text-sm text-muted-foreground font-medium">Total de Motos</p>
+              <p className="text-2xl font-bold text-green-500">{kpis.totalMotos}</p>
+              <p className="text-xs text-muted-foreground">na frota</p>
+            </div>
+            <div className="p-3 rounded-lg bg-green-500">
+              <Bike className="h-6 w-6 text-white" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="border-l-4 border-l-yellow-500">
+          <CardContent className="p-4 flex justify-between items-center">
+            <div>
+              <p className="text-sm text-muted-foreground font-medium">Taxa Média</p>
+              <p className="text-2xl font-bold text-yellow-600">{kpis.taxaMediaOcupacao.toFixed(1)}%</p>
+              <p className="text-xs text-muted-foreground">ocupação</p>
+            </div>
+            <div className="p-3 rounded-lg bg-yellow-500">
+              <TrendingUp className="h-6 w-6 text-white" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="border-l-4 border-l-purple-500">
+          <CardContent className="p-4 flex justify-between items-center">
+            <div>
+              <p className="text-sm text-muted-foreground font-medium">Top Performer</p>
+              <p className="text-lg font-bold text-purple-500 truncate">
+                {kpis.melhorFranqueado?.franqueadoName.substring(0, 12) || 'N/A'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {kpis.melhorFranqueado?.percentLocadas.toFixed(1)}% ocupação
+              </p>
+            </div>
+            <div className="p-3 rounded-lg bg-purple-500">
+              <Award className="h-6 w-6 text-white" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       <Card className="mb-6 p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -244,68 +395,160 @@ export default function FranqueadosPage() {
         </div>
       </Card>
 
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 font-headline">
-            <Bike className="h-6 w-6 text-primary" />
-            Status da Frota por Franqueado
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-border rounded-lg min-h-[300px] bg-muted/50">
-              <Users className="h-24 w-24 text-muted-foreground mb-4 animate-pulse" />
-              <p className="text-muted-foreground text-center">
-                Carregando dados dos franqueados...
-              </p>
-            </div>
-          ) : processedData.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-border rounded-lg min-h-[300px] bg-muted/50">
-              <Users className="h-24 w-24 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground text-center">
-                Nenhum dado encontrado para os filtros selecionados.
-                <br />
-                Ajuste os filtros ou verifique os dados cadastrados.
-              </p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-left">Franqueado</TableHead>
-                    <TableHead className="text-right">Alugada</TableHead>
-                    <TableHead className="text-right">Disponível</TableHead>
-                    <TableHead className="text-right">Manutenção</TableHead>
-                    <TableHead className="text-right">Sucata</TableHead>
-                    <TableHead className="text-right">Sinistro</TableHead>
-                    <TableHead className="text-right">Não Transferida</TableHead>
-                    <TableHead className="text-right">Não Localizada</TableHead>
-                    <TableHead className="text-right font-semibold">Total Geral</TableHead>
-                    <TableHead className="text-right">% Locadas</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {processedData.map((item) => (
-                    <TableRow key={item.franqueadoName}>
-                      <TableCell className="text-left font-medium">{item.franqueadoName}</TableCell>
-                      <TableCell className="text-right">{item.counts.alugada}</TableCell>
-                      <TableCell className="text-right">{item.counts.active}</TableCell>
-                      <TableCell className="text-right">{item.counts.manutencao}</TableCell>
-                      <TableCell className="text-right">{item.counts.sucata}</TableCell>
-                      <TableCell className="text-right">{item.counts.sinistro}</TableCell>
-                      <TableCell className="text-right">{item.counts.nao_transferida}</TableCell>
-                      <TableCell className="text-right">{item.counts.nao_localizada}</TableCell>
-                      <TableCell className="text-right font-bold">{item.totalGeral}</TableCell>
-                      <TableCell className="text-right">{item.percentLocadas.toFixed(1)}%</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="table" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="table" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Tabela Detalhada
+          </TabsTrigger>
+          <TabsTrigger value="performance" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Performance
+          </TabsTrigger>
+          <TabsTrigger value="distribution" className="flex items-center gap-2">
+            <PieChart className="h-4 w-4" />
+            Distribuição
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="table" className="mt-6">
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 font-headline">
+                <Bike className="h-6 w-6 text-primary" />
+                Status da Frota por Franqueado
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-border rounded-lg min-h-[300px] bg-muted/50">
+                  <Users className="h-24 w-24 text-muted-foreground mb-4 animate-pulse" />
+                  <p className="text-muted-foreground text-center">
+                    Carregando dados dos franqueados...
+                  </p>
+                </div>
+              ) : processedData.length === 0 ? (
+                <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-border rounded-lg min-h-[300px] bg-muted/50">
+                  <Users className="h-24 w-24 text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground text-center">
+                    Nenhum dado encontrado para os filtros selecionados.
+                    <br />
+                    Ajuste os filtros ou verifique os dados cadastrados.
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-left">Franqueado</TableHead>
+                        <TableHead className="text-center">Alugada</TableHead>
+                        <TableHead className="text-center">Disponível</TableHead>
+                        <TableHead className="text-center">Manutenção</TableHead>
+                        <TableHead className="text-center">Sucata</TableHead>
+                        <TableHead className="text-center">Sinistro</TableHead>
+                        <TableHead className="text-center">N. Transfer.</TableHead>
+                        <TableHead className="text-center">N. Localiz.</TableHead>
+                        <TableHead className="text-center font-semibold">Total</TableHead>
+                        <TableHead className="text-center">% Ocupação</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {processedData.map((item) => (
+                        <TableRow key={item.franqueadoName} className="hover:bg-muted/50">
+                          <TableCell className="text-left font-medium">
+                            <div className="flex items-center gap-2">
+                              {item.franqueadoName}
+                              {item.percentLocadas >= 80 && <Award className="h-4 w-4 text-yellow-500" />}
+                              {item.percentLocadas < 30 && <AlertTriangle className="h-4 w-4 text-red-500" />}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge {...getStatusBadgeProps('alugada', item.counts.alugada)} />
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge {...getStatusBadgeProps('active', item.counts.active)} />
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge {...getStatusBadgeProps('manutencao', item.counts.manutencao)} />
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge {...getStatusBadgeProps('sucata', item.counts.sucata)} />
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge {...getStatusBadgeProps('sinistro', item.counts.sinistro)} />
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge {...getStatusBadgeProps('nao_transferida', item.counts.nao_transferida)} />
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge {...getStatusBadgeProps('nao_localizada', item.counts.nao_localizada)} />
+                          </TableCell>
+                          <TableCell className="text-center font-bold">{item.totalGeral}</TableCell>
+                          <TableCell className="text-center">
+                            {renderProgressBar(item.percentLocadas, 
+                              item.percentLocadas >= 70 ? 'success' : 
+                              item.percentLocadas >= 40 ? 'warning' : 'destructive'
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="performance" className="mt-6">
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 font-headline">
+                <BarChart3 className="h-6 w-6 text-primary" />
+                Performance dos Franqueados (Top 10)
+              </CardTitle>
+              <CardDescription>
+                Comparação do desempenho baseado em motos alugadas, disponíveis e em manutenção.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {processedData.length > 0 ? (
+                <FranchiseePerformanceChart data={chartData} />
+              ) : (
+                <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-border rounded-lg min-h-[300px] bg-muted/50">
+                  <BarChart3 className="h-24 w-24 text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground text-center">Nenhum dado disponível para exibir gráfico.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="distribution" className="mt-6">
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 font-headline">
+                <PieChart className="h-6 w-6 text-primary" />
+                Distribuição Total da Frota
+              </CardTitle>
+              <CardDescription>
+                Visão geral da distribuição de todas as motos por status.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {pieChartData.length > 0 ? (
+                <FleetDistributionPieChart data={pieChartData} />
+              ) : (
+                <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-border rounded-lg min-h-[300px] bg-muted/50">
+                  <PieChart className="h-24 w-24 text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground text-center">Nenhum dado disponível para exibir gráfico.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </DashboardLayout>
   );
 }
