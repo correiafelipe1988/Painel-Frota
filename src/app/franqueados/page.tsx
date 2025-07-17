@@ -6,13 +6,18 @@ import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Users, Bike } from "lucide-react";
+import { Users, Bike, TrendingUp, Award, AlertTriangle, BarChart3, PieChart } from "lucide-react";
 import { subscribeToMotorcycles } from '@/lib/firebase/motorcycleService';
 import type { Motorcycle, MotorcycleStatus } from '@/lib/types';
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FranchiseePerformanceChart } from "@/components/charts/franchisee-performance-chart";
+import { FleetDistributionPieChart } from "@/components/charts/fleet-distribution-pie-chart";
 
 
 interface FranchiseeFleetStatus {
