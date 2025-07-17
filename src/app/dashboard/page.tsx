@@ -83,22 +83,40 @@ const processMotorcycleData = (motorcycles: Motorcycle[], year: number) => {
     const rentalNovasCounts = Array(12).fill(0);
     const rentalUsadasCounts = Array(12).fill(0);
 
+    // Contar todas as motos alugadas por mês (não apenas as movimentações)
+    // Agrupamos por placa e pegamos a movimentação mais recente no mês
+    const monthlyRentalsByPlaca: { [month: number]: { [placa: string]: Motorcycle } } = {};
+    
     motorcycles.forEach(moto => {
-        if (moto.data_ultima_mov) {
+        if (moto.data_ultima_mov && moto.status === 'alugada' && moto.placa) {
             try {
                 const movDate = parseISO(moto.data_ultima_mov);
                 if (isValid(movDate) && getYear(movDate) === year) {
                     const monthIndex = getMonth(movDate);
-                    if (moto.status === 'alugada') {
-                        if (moto.type === 'nova') {
-                            rentalNovasCounts[monthIndex]++;
-                        } else if (moto.type === 'usada') {
-                            rentalUsadasCounts[monthIndex]++;
-                        }
+                    
+                    if (!monthlyRentalsByPlaca[monthIndex]) {
+                        monthlyRentalsByPlaca[monthIndex] = {};
+                    }
+                    
+                    const existingMoto = monthlyRentalsByPlaca[monthIndex][moto.placa];
+                    if (!existingMoto || (moto.data_ultima_mov && existingMoto.data_ultima_mov && new Date(moto.data_ultima_mov) > new Date(existingMoto.data_ultima_mov))) {
+                        monthlyRentalsByPlaca[monthIndex][moto.placa] = moto;
                     }
                 }
             } catch (e) { console.error("Error parsing date for motorcycle charts: ", moto.data_ultima_mov, e); }
         }
+    });
+
+    // Contar por tipo (nova/usada) para cada mês
+    Object.entries(monthlyRentalsByPlaca).forEach(([monthStr, motosDoMes]) => {
+        const monthIndex = parseInt(monthStr);
+        Object.values(motosDoMes).forEach(moto => {
+            if (moto.type === 'nova') {
+                rentalNovasCounts[monthIndex]++;
+            } else if (moto.type === 'usada') {
+                rentalUsadasCounts[monthIndex]++;
+            }
+        });
     });
 
     const combinedRentalData = monthAbbreviations.map((m, i) => ({
@@ -165,25 +183,35 @@ const processDailyMotorcycleData = (motorcycles: Motorcycle[]) => {
 
     const dailyRentalData = last30Days.map(date => {
         const dayString = format(date, 'dd/MM');
-        let alugadasNovasCount = 0;
-        let alugadasUsadasCount = 0;
-
+        
+        // Agrupar por placa e pegar a movimentação mais recente do dia
+        const dailyRentalsByPlaca: { [placa: string]: Motorcycle } = {};
+        
         motorcycles.forEach(moto => {
-            if (moto.data_ultima_mov) {
+            if (moto.data_ultima_mov && moto.status === 'alugada' && moto.placa) {
                 try {
                     const movDate = parseISO(moto.data_ultima_mov);
                     if (isValid(movDate) && isSameDay(startOfDay(movDate), date)) {
-                        if (moto.status === 'alugada') {
-                            if (moto.type === 'nova') {
-                                alugadasNovasCount++;
-                            } else if (moto.type === 'usada') {
-                                alugadasUsadasCount++;
-                            }
+                        const existingMoto = dailyRentalsByPlaca[moto.placa];
+                        if (!existingMoto || (moto.data_ultima_mov && existingMoto.data_ultima_mov && new Date(moto.data_ultima_mov) > new Date(existingMoto.data_ultima_mov))) {
+                            dailyRentalsByPlaca[moto.placa] = moto;
                         }
                     }
                 } catch (e) {
                     console.error("Error parsing date for daily motorcycle charts: ", moto.data_ultima_mov, e);
                 }
+            }
+        });
+
+        // Contar por tipo (nova/usada)
+        let alugadasNovasCount = 0;
+        let alugadasUsadasCount = 0;
+        
+        Object.values(dailyRentalsByPlaca).forEach(moto => {
+            if (moto.type === 'nova') {
+                alugadasNovasCount++;
+            } else if (moto.type === 'usada') {
+                alugadasUsadasCount++;
             }
         });
 
