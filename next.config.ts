@@ -1,11 +1,16 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  // gera export estático em "out/"
   output: 'export',
-  // desabilita otimização de imagens para compatibilidade com export estático
+  trailingSlash: false,
   images: {
     unoptimized: true
+  },
+  distDir: 'out',
+  assetPrefix: '',
+  // Configuração para SPA
+  experimental: {
+    missingSuspenseWithCSRBailout: false,
   },
 };
 

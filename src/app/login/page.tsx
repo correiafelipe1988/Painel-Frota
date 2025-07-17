@@ -26,23 +26,8 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      console.log('Attempting login...');
       await signIn(email, password);
-      console.log('Login successful, redirecting...');
-      
-      // Verificar se há uma URL salva para redirecionamento
-      const redirectPath = typeof window !== 'undefined' ? localStorage.getItem('redirect_after_login') : null;
-      
-      // Aguardar um pouco para garantir que o estado foi atualizado
-      setTimeout(() => {
-        if (redirectPath) {
-          localStorage.removeItem('redirect_after_login');
-          router.push(redirectPath);
-        } else {
-          router.push('/dashboard');
-        }
-      }, 500);
-      
+      router.replace('/');
     } catch (error) {
       console.error('Erro no login:', error);
     } finally {
@@ -50,13 +35,9 @@ export default function LoginPage() {
     }
   };
 
-  // Redirecionar se já estiver logado (com delay para evitar conflitos)
   useEffect(() => {
     if (!loading && user) {
-      const redirectTimer = setTimeout(() => {
-        router.push('/dashboard');
-      }, 100);
-      return () => clearTimeout(redirectTimer);
+      router.replace('/');
     }
   }, [user, loading, router]);
 

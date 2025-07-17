@@ -1,2 +1,2 @@
-git checkout -b feature/projecao-locacoes
-git push origin feature/projecao-locacoes
+npm run build
+firebase deploy
