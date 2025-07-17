@@ -19,13 +19,21 @@ interface FranchiseeFleetStatus {
   franqueadoName: string;
   counts: {
     alugada: number;
-    active: number; // Disponível
+    active: number;
     manutencao: number;
+    sucata: number;
+    sinistro: number;
+    nao_transferida: number;
+    nao_localizada: number;
   };
   totalGeral: number;
   percentLocadas: number;
   percentManutencao: number;
   percentDisponivel: number;
+  percentSucata: number;
+  percentSinistro: number;
+  percentNaoTransferida: number;
+  percentNaoLocalizada: number;
 }
 
 export default function FranqueadosPage() {
@@ -166,16 +174,23 @@ export default function FranqueadosPage() {
           alugada: stats.counts.alugada,
           active: stats.counts.active,
           manutencao: stats.counts.manutencao,
+          sucata: stats.counts.sucata,
+          sinistro: stats.counts.sinistro,
+          nao_transferida: stats.counts.nao_transferida,
+          nao_localizada: stats.counts.nao_localizada,
         },
         totalGeral: stats.totalGeral,
         percentLocadas,
         percentManutencao,
         percentDisponivel,
+        percentSucata: stats.totalGeral > 0 ? (stats.counts.sucata / stats.totalGeral) * 100 : 0,
+        percentSinistro: stats.totalGeral > 0 ? (stats.counts.sinistro / stats.totalGeral) * 100 : 0,
+        percentNaoTransferida: stats.totalGeral > 0 ? (stats.counts.nao_transferida / stats.totalGeral) * 100 : 0,
+        percentNaoLocalizada: stats.totalGeral > 0 ? (stats.counts.nao_localizada / stats.totalGeral) * 100 : 0,
       };
-    }).sort((a, b) => b.totalGeral - a.totalGeral); 
+    }).sort((a, b) => a.franqueadoName.localeCompare(b.franqueadoName));
 
     setProcessedData(dataForTable);
-
   }, [allMotorcycles, isLoading, selectedFranchisee, startDate, endDate]);
 
   return (
@@ -187,43 +202,42 @@ export default function FranqueadosPage() {
         iconContainerClassName="bg-primary"
       />
 
-        <Card className="mb-6 p-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <Label htmlFor="franchisee-select">Franqueado</Label>
-                     <Select onValueChange={setSelectedFranchisee} value={selectedFranchisee}>
-                        <SelectTrigger id="franchisee-select">
-                            <SelectValue placeholder="Selecione o Franqueado" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">Todos os Franqueados</SelectItem>
-                            {franchisees.map(franqueado => (
-                                <SelectItem key={franqueado} value={franqueado}>{franqueado}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div>
-                    <Label htmlFor="start-date">Data de Início</Label>
-                    <Input
-                        type="date"
-                        id="start-date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                    />
-                </div>
-                <div>
-                    <Label htmlFor="end-date">Data de Fim</Label>
-                    <Input
-                        type="date"
-                        id="end-date"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                    />
-                </div>
-            </div>
-        </Card>
-
+      <Card className="mb-6 p-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <Label htmlFor="franchisee-select">Franqueado</Label>
+            <Select onValueChange={setSelectedFranchisee} value={selectedFranchisee}>
+              <SelectTrigger id="franchisee-select">
+                <SelectValue placeholder="Selecione o Franqueado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os Franqueados</SelectItem>
+                {franchisees.map(franqueado => (
+                  <SelectItem key={franqueado} value={franqueado}>{franqueado}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="start-date">Data de Início</Label>
+            <Input
+              type="date"
+              id="start-date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+          </div>
+          <div>
+            <Label htmlFor="end-date">Data de Fim</Label>
+            <Input
+              type="date"
+              id="end-date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          </div>
+        </div>
+      </Card>
 
       <Card className="shadow-lg">
         <CardHeader>
@@ -258,19 +272,12 @@ export default function FranqueadosPage() {
                     <TableHead className="text-right">Alugada</TableHead>
                     <TableHead className="text-right">Disponível</TableHead>
                     <TableHead className="text-right">Manutenção</TableHead>
+                    <TableHead className="text-right">Sucata</TableHead>
+                    <TableHead className="text-right">Sinistro</TableHead>
+                    <TableHead className="text-right">Não Transferida</TableHead>
+                    <TableHead className="text-right">Não Localizada</TableHead>
                     <TableHead className="text-right font-semibold">Total Geral</TableHead>
-                    <TableHead className="text-right">
-                      <div className="text-xs text-muted-foreground">Meta 91%</div>
-                      <div>Locadas</div>
-                    </TableHead>
-                    <TableHead className="text-right">
-                      <div className="text-xs text-muted-foreground">Meta &lt; 5%</div>
-                      <div>Manutenção</div>
-                    </TableHead>
-                    <TableHead className="text-right">
-                      <div className="text-xs text-muted-foreground">Meta &gt; 4,5%</div>
-                      <div>Disponível</div>
-                    </TableHead>
+                    <TableHead className="text-right">% Locadas</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -280,43 +287,12 @@ export default function FranqueadosPage() {
                       <TableCell className="text-right">{item.counts.alugada}</TableCell>
                       <TableCell className="text-right">{item.counts.active}</TableCell>
                       <TableCell className="text-right">{item.counts.manutencao}</TableCell>
+                      <TableCell className="text-right">{item.counts.sucata}</TableCell>
+                      <TableCell className="text-right">{item.counts.sinistro}</TableCell>
+                      <TableCell className="text-right">{item.counts.nao_transferida}</TableCell>
+                      <TableCell className="text-right">{item.counts.nao_localizada}</TableCell>
                       <TableCell className="text-right font-bold">{item.totalGeral}</TableCell>
-                      <TableCell
-                        className={cn(
-                          "text-right font-medium",
-                          item.percentLocadas >= 91
-                            ? "bg-green-100 text-green-700"
-                            : item.percentLocadas >= 85
-                            ? "bg-yellow-100 text-yellow-700"
-                            : "bg-red-100 text-red-700"
-                        )}
-                      >
-                        {item.percentLocadas.toFixed(1)}%
-                      </TableCell>
-                      <TableCell
-                        className={cn(
-                          "text-right font-medium",
-                          item.percentManutencao > 5
-                            ? "bg-red-100 text-red-700"
-                            : item.percentManutencao >= 3
-                            ? "bg-yellow-100 text-yellow-700"
-                            : "bg-green-100 text-green-700"
-                        )}
-                      >
-                        {item.percentManutencao.toFixed(1)}%
-                      </TableCell>
-                      <TableCell
-                        className={cn(
-                          "text-right font-medium",
-                          item.percentDisponivel < 4.5
-                            ? "bg-green-100 text-green-700"
-                            : item.percentDisponivel <= 7
-                            ? "bg-yellow-100 text-yellow-700"
-                            : "bg-red-100 text-red-700"
-                        )}
-                      >
-                        {item.percentDisponivel.toFixed(1)}%
-                      </TableCell>
+                      <TableCell className="text-right">{item.percentLocadas.toFixed(1)}%</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

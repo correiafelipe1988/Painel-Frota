@@ -18,9 +18,9 @@ interface ModelData {
   alugadas: number;
   active: number;
   manutencao: number;
-  totalRevenue: number;
-  averageTicket: number;
-  occupationRate: number;
+  naoTransferida: number;
+  naoLocalizada: number;
+  sinistro: number;
   franchisees: Set<string>;
 }
 
@@ -43,9 +43,9 @@ export function ModelAnalysisTable({ motorcycles, compact = false }: ModelAnalys
           alugadas: 0,
           active: 0,
           manutencao: 0,
-          totalRevenue: 0,
-          averageTicket: 0,
-          occupationRate: 0,
+          naoTransferida: 0,
+          naoLocalizada: 0,
+          sinistro: 0,
           franchisees: new Set()
         };
       }
@@ -63,6 +63,15 @@ export function ModelAnalysisTable({ motorcycles, compact = false }: ModelAnalys
           break;
         case 'manutencao':
           model.manutencao++;
+          break;
+        case 'nao_transferida':
+          model.naoTransferida++;
+          break;
+        case 'nao_localizada':
+          model.naoLocalizada++;
+          break;
+        case 'sinistro':
+          model.sinistro++;
           break;
       }
       
@@ -127,9 +136,9 @@ export function ModelAnalysisTable({ motorcycles, compact = false }: ModelAnalys
             <TableHead className="text-center">Alugadas</TableHead>
             <TableHead className="text-center">Disponíveis</TableHead>
             <TableHead className="text-center">Manutenção</TableHead>
-            <TableHead className="text-center">Taxa Ocupação</TableHead>
-            <TableHead className="text-center">Ticket Médio</TableHead>
-            <TableHead className="text-center">Receita Semanal</TableHead>
+            <TableHead className="text-center">Não Transferida</TableHead>
+            <TableHead className="text-center">Não Localizada</TableHead>
+            <TableHead className="text-center">Sinistro</TableHead>
             <TableHead className="text-center">Franqueados</TableHead>
           </TableRow>
         </TableHeader>
@@ -158,24 +167,19 @@ export function ModelAnalysisTable({ motorcycles, compact = false }: ModelAnalys
                 </Badge>
               </TableCell>
               <TableCell className="text-center">
-                <div className="flex items-center gap-2">
-                  <Progress 
-                    value={model.occupationRate} 
-                    className="w-16 h-2"
-                  />
-                  <span className={`text-sm font-medium ${
-                    model.occupationRate >= 85 ? 'text-green-600' :
-                    model.occupationRate >= 75 ? 'text-yellow-600' : 'text-red-600'
-                  }`}>
-                    {model.occupationRate.toFixed(1)}%
-                  </span>
-                </div>
+                <Badge className="bg-orange-100 text-orange-700">
+                  {model.naoTransferida}
+                </Badge>
               </TableCell>
-              <TableCell className="text-center font-medium text-green-600">
-                {formatCurrency(model.averageTicket)}
+              <TableCell className="text-center">
+                <Badge className="bg-red-100 text-red-700">
+                  {model.naoLocalizada}
+                </Badge>
               </TableCell>
-              <TableCell className="text-center font-medium text-blue-600">
-                {formatCurrency(model.totalRevenue)}
+              <TableCell className="text-center">
+                <Badge className="bg-gray-100 text-gray-700">
+                  {model.sinistro}
+                </Badge>
               </TableCell>
               <TableCell className="text-center">
                 <Badge variant="secondary">

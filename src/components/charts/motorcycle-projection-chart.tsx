@@ -35,63 +35,65 @@ export function MotorcycleProjectionChart() {
     return () => unsubscribe()
   }, [])
 
-  // Calcular base atual dinâmica (placas únicas)
-  const baseAtual = useMemo(() => {
-    const placasUnicas = new Set(motorcycles.map(moto => moto.placa).filter(Boolean))
+  // Calcular locações realizadas (motos alugadas únicas por placa)
+  const locacoesRealizadas = useMemo(() => {
+    const motosAlugadas = motorcycles.filter(moto => moto.status === 'alugada')
+    const placasUnicas = new Set(motosAlugadas.map(moto => moto.placa).filter(Boolean))
     return placasUnicas.size
   }, [motorcycles])
 
   // Determinar o mês atual
   const mesAtual = new Date().getMonth() + 1 // 1-12
-  const metaFinal = 1000
-  const mesesRestantes = Math.max(1, 12 - mesAtual) // Pelo menos 1 mês
+  const metaFinalLocacoes = 300 // Meta de 300 locações até dezembro
+  const mesesRestantes = Math.max(1, 12 - mesAtual)
   
-  // Calcular quantas motos precisam ser adicionadas
-  const motasFaltantes = Math.max(0, metaFinal - baseAtual)
-  const motasPorMes = Math.ceil(motasFaltantes / mesesRestantes)
+  // Calcular crescimento médio mensal baseado nas locações atuais
+  const crescimentoMedioMensal = locacoesRealizadas / mesAtual
+  
+  // Calcular quantas locações precisam ser adicionadas por mês
+  const locacoesFaltantes = Math.max(0, metaFinalLocacoes - locacoesRealizadas)
+  const locacoesPorMes = Math.ceil(locacoesFaltantes / mesesRestantes)
 
   // Dados históricos estimados (baseado no crescimento até o mês atual)
   const dadosHistoricos = useMemo(() => {
-    const crescimentoMedio = baseAtual / mesAtual // Crescimento médio por mês até agora
-    
     return [
-      { month: "Jan", monthNumber: 1, atual: Math.round(crescimentoMedio * 1) },
-      { month: "Fev", monthNumber: 2, atual: Math.round(crescimentoMedio * 2) },
-      { month: "Mar", monthNumber: 3, atual: Math.round(crescimentoMedio * 3) },
-      { month: "Abr", monthNumber: 4, atual: Math.round(crescimentoMedio * 4) },
-      { month: "Mai", monthNumber: 5, atual: Math.round(crescimentoMedio * 5) },
-      { month: "Jun", monthNumber: 6, atual: mesAtual >= 6 ? baseAtual : Math.round(crescimentoMedio * 6) },
-      { month: "Jul", monthNumber: 7, atual: mesAtual >= 7 ? baseAtual : baseAtual }, // Manter base atual para meses futuros
-      { month: "Ago", monthNumber: 8, atual: mesAtual >= 8 ? baseAtual : baseAtual },
-      { month: "Set", monthNumber: 9, atual: mesAtual >= 9 ? baseAtual : baseAtual },
-      { month: "Out", monthNumber: 10, atual: mesAtual >= 10 ? baseAtual : baseAtual },
-      { month: "Nov", monthNumber: 11, atual: mesAtual >= 11 ? baseAtual : baseAtual },
-      { month: "Dez", monthNumber: 12, atual: mesAtual >= 12 ? baseAtual : baseAtual }
+      { month: "Jan", monthNumber: 1, atual: Math.round(crescimentoMedioMensal * 1) },
+      { month: "Fev", monthNumber: 2, atual: Math.round(crescimentoMedioMensal * 2) },
+      { month: "Mar", monthNumber: 3, atual: Math.round(crescimentoMedioMensal * 3) },
+      { month: "Abr", monthNumber: 4, atual: Math.round(crescimentoMedioMensal * 4) },
+      { month: "Mai", monthNumber: 5, atual: Math.round(crescimentoMedioMensal * 5) },
+      { month: "Jun", monthNumber: 6, atual: mesAtual >= 6 ? locacoesRealizadas : Math.round(crescimentoMedioMensal * 6) },
+      { month: "Jul", monthNumber: 7, atual: mesAtual >= 7 ? locacoesRealizadas : locacoesRealizadas },
+      { month: "Ago", monthNumber: 8, atual: mesAtual >= 8 ? locacoesRealizadas : locacoesRealizadas },
+      { month: "Set", monthNumber: 9, atual: mesAtual >= 9 ? locacoesRealizadas : locacoesRealizadas },
+      { month: "Out", monthNumber: 10, atual: mesAtual >= 10 ? locacoesRealizadas : locacoesRealizadas },
+      { month: "Nov", monthNumber: 11, atual: mesAtual >= 11 ? locacoesRealizadas : locacoesRealizadas },
+      { month: "Dez", monthNumber: 12, atual: mesAtual >= 12 ? locacoesRealizadas : locacoesRealizadas }
     ]
-  }, [baseAtual, mesAtual])
+  }, [locacoesRealizadas, mesAtual, crescimentoMedioMensal])
 
-  // Criar dados de projeção
+  // Criar dados de projeção para locações
   const dadosProjecao: ProjectionData[] = useMemo(() => {
     return dadosHistoricos.map((item) => {
       let projecao = item.atual
-      let motosNecessarias = 0
+      let locacoesNecessarias = 0
 
       if (item.monthNumber > mesAtual) {
         const mesesApos = item.monthNumber - mesAtual
-        projecao = baseAtual + (motasPorMes * mesesApos)
-        motosNecessarias = motasPorMes
+        projecao = locacoesRealizadas + (locacoesPorMes * mesesApos)
+        locacoesNecessarias = locacoesPorMes
       } else if (item.monthNumber === mesAtual) {
-        projecao = baseAtual
+        projecao = locacoesRealizadas
       }
 
       return {
         ...item,
-        projecao: Math.min(projecao, metaFinal),
-        meta: metaFinal,
-        motosNecessarias
+        projecao: Math.min(projecao, metaFinalLocacoes),
+        meta: metaFinalLocacoes,
+        motosNecessarias: locacoesNecessarias
       }
     })
-  }, [dadosHistoricos, mesAtual, baseAtual, motasPorMes, metaFinal])
+  }, [dadosHistoricos, mesAtual, locacoesRealizadas, locacoesPorMes, metaFinalLocacoes])
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -158,9 +160,9 @@ export function MotorcycleProjectionChart() {
         <Card className="border-l-4 border-l-blue-500 shadow-lg hover:shadow-xl transition-shadow duration-300">
           <CardContent className="p-4 flex justify-between items-center">
             <div>
-              <p className="text-sm text-muted-foreground font-medium">Base Atual</p>
-              <p className="text-2xl font-bold text-blue-500">{baseAtual}</p>
-              <p className="text-xs text-muted-foreground">motos em {getNomesMeses()}</p>
+              <p className="text-sm text-muted-foreground font-medium">Locações Realizadas</p>
+              <p className="text-2xl font-bold text-blue-500">{locacoesRealizadas}</p>
+              <p className="text-xs text-muted-foreground">locações em {getNomesMeses()}</p>
             </div>
             <div className="p-3 rounded-lg bg-blue-500">
               <Target className="h-6 w-6 text-white" />
@@ -172,8 +174,8 @@ export function MotorcycleProjectionChart() {
           <CardContent className="p-4 flex justify-between items-center">
             <div>
               <p className="text-sm text-muted-foreground font-medium">Meta Dezembro</p>
-              <p className="text-2xl font-bold text-green-500">{metaFinal}</p>
-              <p className="text-xs text-muted-foreground">motos até dezembro</p>
+              <p className="text-2xl font-bold text-green-500">{metaFinalLocacoes}</p>
+              <p className="text-xs text-muted-foreground">locações até dezembro</p>
             </div>
             <div className="p-3 rounded-lg bg-green-500">
               <TrendingUp className="h-6 w-6 text-white" />
@@ -185,8 +187,8 @@ export function MotorcycleProjectionChart() {
           <CardContent className="p-4 flex justify-between items-center">
             <div>
               <p className="text-sm text-muted-foreground font-medium">Faltam</p>
-              <p className="text-2xl font-bold text-orange-500">{motasFaltantes}</p>
-              <p className="text-xs text-muted-foreground">motos para a meta</p>
+              <p className="text-2xl font-bold text-orange-500">{locacoesFaltantes}</p>
+              <p className="text-xs text-muted-foreground">locações para a meta</p>
             </div>
             <div className="p-3 rounded-lg bg-orange-500">
               <AlertCircle className="h-6 w-6 text-white" />
@@ -198,8 +200,8 @@ export function MotorcycleProjectionChart() {
           <CardContent className="p-4 flex justify-between items-center">
             <div>
               <p className="text-sm text-muted-foreground font-medium">Por Mês</p>
-              <p className="text-2xl font-bold text-purple-500">+{motasPorMes}</p>
-              <p className="text-xs text-muted-foreground">motos necessárias</p>
+              <p className="text-2xl font-bold text-purple-500">+{locacoesPorMes}</p>
+              <p className="text-xs text-muted-foreground">locações necessárias</p>
             </div>
             <div className="p-3 rounded-lg bg-purple-500">
               <Calendar className="h-6 w-6 text-white" />
@@ -211,9 +213,9 @@ export function MotorcycleProjectionChart() {
       {/* Gráfico de Projeção */}
       <Card>
         <CardHeader>
-          <CardTitle>Projeção de Crescimento da Base de Motos</CardTitle>
+          <CardTitle>Projeção de Locações 2025</CardTitle>
           <CardDescription>
-            Crescimento necessário para atingir 1.000 motos até dezembro de 2025
+            Crescimento necessário para atingir 300 locações até dezembro de 2025
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -235,17 +237,17 @@ export function MotorcycleProjectionChart() {
                 />
                 <YAxis 
                   tick={{ fontSize: 12 }}
-                  domain={[0, 1100]}
+                  domain={[0, 600]}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend />
                 
                 {/* Linha da meta */}
                 <ReferenceLine
-                  y={metaFinal}
+                  y={metaFinalLocacoes}
                   stroke="#ef4444"
                   strokeDasharray="5 5"
-                  label={{ value: "Meta: 1.000 motos", position: "top" }}
+                  label={{ value: "Meta: 300 locações", position: "top" }}
                 />
                 
                 {/* Linha dos dados atuais */}
@@ -288,7 +290,7 @@ export function MotorcycleProjectionChart() {
               <thead>
                 <tr className="border-b">
                   <th className="text-left p-2">Mês</th>
-                  <th className="text-right p-2">Base Atual</th>
+                  <th className="text-right p-2">Base Motos Alugadas</th>
                   <th className="text-right p-2">Projeção</th>
                   <th className="text-right p-2">Motos a Adicionar</th>
                   <th className="text-center p-2">Status</th>
@@ -338,23 +340,23 @@ export function MotorcycleProjectionChart() {
         <CardContent className="text-orange-700">
           <div className="space-y-2">
             <p>
-              <strong>Situação Atual:</strong> {baseAtual} motos na base ({getNomesMeses()} 2025)
+              <strong>Situação Atual:</strong> {locacoesRealizadas} locações na base ({getNomesMeses()} 2025)
             </p>
             <p>
-              <strong>Meta:</strong> 1.000 motos até dezembro 2025
+              <strong>Meta:</strong> 300 locações até dezembro 2025
             </p>
             <p>
-              <strong>Crescimento Necessário:</strong> +{motasFaltantes} motos em {mesesRestantes} meses
+              <strong>Crescimento Necessário:</strong> +{locacoesFaltantes} locações em {mesesRestantes} meses
             </p>
             <p>
-              <strong>Média Mensal:</strong> +{motasPorMes} motos por mês ({getNomesMeses() === 'dezembro' ? 'dezembro' : `${getNomesMeses()} a dezembro`})
+              <strong>Média Mensal:</strong> +{locacoesPorMes} locações por mês ({getNomesMeses() === 'dezembro' ? 'dezembro' : `${getNomesMeses()} a dezembro`})
             </p>
             <p className="text-sm mt-4 p-3 bg-orange-100 rounded-lg">
-              <strong>Recomendação:</strong> Para atingir a meta de 1.000 motos até dezembro, 
-              é necessário adicionar aproximadamente {motasPorMes} motos por mês a partir de {getNomesMeses()}. 
-              {baseAtual > 0 && (
+              <strong>Recomendação:</strong> Para atingir a meta de 300 locações até dezembro, 
+              é necessário adicionar aproximadamente {locacoesPorMes} locações por mês a partir de {getNomesMeses()}. 
+              {locacoesRealizadas > 0 && (
                 <>
-                  Isso representa um crescimento mensal de {((motasPorMes / baseAtual) * 100).toFixed(1)}% 
+                  Isso representa um crescimento mensal de {((locacoesPorMes / locacoesRealizadas) * 100).toFixed(1)}% 
                   sobre a base atual.
                 </>
               )}

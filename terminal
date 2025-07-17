@@ -1,0 +1,9 @@
+git add .
+git commit -m "feat: atualizar projeção para meta de 300 locações
+
+- Alterar meta de 800 para 300 locações
+- Atualizar títulos e descrições para 'Projeção de Locações'
+- Ajustar eixo Y do gráfico para 600
+- Corrigir cabeçalho da tabela para 'Base Motos Alugadas'"
+
+git push origin main

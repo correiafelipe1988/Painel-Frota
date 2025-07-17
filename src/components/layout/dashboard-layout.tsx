@@ -28,9 +28,9 @@ import { subscribeToMotorcycles } from '@/lib/firebase/motorcycleService';
 import { useAuth } from '@/context/AuthContext';
 
 const navItems: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", subLabel: "Visão geral", icon: LayoutDashboard },
+  { href: "/", label: "Dashboard", subLabel: "Visão geral", icon: LayoutDashboard },
   { href: "/motorcycles", label: "Gestão de Motos", subLabel: "Frota completa", icon: ListFilter },
-  { href: "/projecao-motos", label: "Projeção de Crescimento", subLabel: "Meta 1.000 motos", icon: TrendingUp },
+  { href: "/projecao-motos", label: "Projeção de Locações", subLabel: "Meta 800 locações", icon: TrendingUp },
   { href: "/franqueados", label: "Franqueados", subLabel: "Análise por franqueado", icon: Users },
   { href: "/financeiro", label: "Financeiro", subLabel: "Receitas e análises", icon: DollarSign },
   { href: "/predict-idle", label: "Previsão de Ociosidade", subLabel: "IA para tempo ocioso", icon: BarChart3 },

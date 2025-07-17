@@ -9,8 +9,8 @@ export default function ProjecaoMotosPage() {
     <DashboardLayout>
       <div className="space-y-6">
         <PageHeader
-          title="Projeção de Crescimento da Base"
-          description="Análise e projeção para atingir 1.000 motos até dezembro de 2025"
+          title="Projeção de Locações 2025"
+          description="Análise e projeção de locações para atingir 300 locações até dezembro de 2025"
         />
         
         <MotorcycleProjectionChart />

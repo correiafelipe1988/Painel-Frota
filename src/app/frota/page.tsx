@@ -128,9 +128,14 @@ export default function FrotaPage() {
                     {[
                       { status: 'alugada', label: 'Alugadas', color: 'bg-blue-100 text-blue-700' },
                       { status: 'active', label: 'Disponíveis', color: 'bg-green-100 text-green-700' },
-                      { status: 'relocada', label: 'Relocadas', color: 'bg-gray-100 text-gray-700' },
                       { status: 'manutencao', label: 'Manutenção', color: 'bg-purple-100 text-purple-700' },
-                      { status: 'recolhida', label: 'Recolhidas', color: 'bg-orange-100 text-orange-700' }
+                      { status: 'sucata', label: 'Sucata', color: 'bg-gray-100 text-gray-700' },
+                      { status: 'sinistro', label: 'Sinistro', color: 'bg-red-100 text-red-700' },
+                      { status: 'furtada', label: 'Furtada', color: 'bg-red-100 text-red-700' },
+                      { status: 'apropriacao_indebita', label: 'Apropriação Indébita', color: 'bg-orange-100 text-orange-700' },
+                      { status: 'nao_transferida', label: 'Não Transferida', color: 'bg-yellow-100 text-yellow-700' },
+                      { status: 'vendida', label: 'Vendida', color: 'bg-blue-100 text-blue-700' },
+                      { status: 'nao_localizada', label: 'Não Localizada', color: 'bg-red-100 text-red-700' }
                     ].map(({ status, label, color }) => {
                       const count = uniqueMotorcycles.filter(m => m.status === status).length;
                       const percentage = uniqueMotorcycles.length > 0 ? (count / uniqueMotorcycles.length * 100).toFixed(1) : '0';
