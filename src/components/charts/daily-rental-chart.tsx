@@ -55,6 +55,7 @@ export function DailyRentalChart({ data }: DailyRentalChartProps) {
         </Bar>
         <Bar dataKey="relocadas" name="Usada" stackId="a" fill="hsl(142.1 76.2% 36.3%)" radius={[4, 4, 0, 0]}>
            <LabelList dataKey="relocadas" position="center" style={{ fontSize: '12px', fill: 'white', fontWeight: 'bold', textShadow: '0 0 3px rgba(0,0,0,0.8)' }} formatter={formatCount} />
+           <LabelList dataKey="total" position="top" style={{ fontSize: '14px', fill: '#333', fontWeight: 'bold' }} formatter={formatCount} />
         </Bar>
         
         <Line 
