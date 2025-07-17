@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { AdminProtectedRoute } from "@/components/auth/AdminProtectedRoute";
 import { PageHeader } from "@/components/shared/page-header";
 import { MotorcycleFilters } from "@/components/motorcycles/motorcycle-filters";
 import { MotorcycleList } from "@/components/motorcycles/motorcycle-list";
@@ -307,7 +307,7 @@ export default function MotorcyclesPage() {
 
   if (isLoading) {
     return (
-      <ProtectedRoute>
+      <AdminProtectedRoute>
         <DashboardLayout>
           <PageHeader
             title="Gestão de Motos"
@@ -319,12 +319,12 @@ export default function MotorcyclesPage() {
             <p>Carregando dados das motocicletas...</p>
           </div>
         </DashboardLayout>
-      </ProtectedRoute>
+      </AdminProtectedRoute>
     );
   }
 
   return (
-    <ProtectedRoute>
+    <AdminProtectedRoute>
       <DashboardLayout>
         <PageHeader
           title="Gestão de Motos"
@@ -355,6 +355,6 @@ export default function MotorcyclesPage() {
           </DialogContent>
         </Dialog>
       </DashboardLayout>
-    </ProtectedRoute>
+    </AdminProtectedRoute>
   );
 }

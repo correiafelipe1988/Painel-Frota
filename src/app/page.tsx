@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/context/AuthContext';
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { AdminProtectedRoute } from "@/components/auth/AdminProtectedRoute";
 import { BarChart3, CalendarDays, CheckCircle2, Bike, ArrowRight, Wrench } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -38,7 +38,7 @@ export default function HomePage() {
   }
 
   return (
-    <ProtectedRoute>
+    <AdminProtectedRoute>
       <DashboardLayout>
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-1">
@@ -118,6 +118,6 @@ export default function HomePage() {
           </p>
         </div>
       </DashboardLayout>
-    </ProtectedRoute>
+    </AdminProtectedRoute>
   );
 }

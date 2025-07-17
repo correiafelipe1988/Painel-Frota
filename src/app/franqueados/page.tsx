@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { AdminProtectedRoute } from "@/components/auth/AdminProtectedRoute";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -291,7 +292,8 @@ export default function FranqueadosPage() {
   };
 
   return (
-    <DashboardLayout>
+    <AdminProtectedRoute>
+      <DashboardLayout>
       <PageHeader
         title="Análise de Franqueados"
         description="Performance e distribuição da frota por franqueado."
@@ -549,6 +551,7 @@ export default function FranqueadosPage() {
           </Card>
         </TabsContent>
       </Tabs>
-    </DashboardLayout>
+      </DashboardLayout>
+    </AdminProtectedRoute>
   );
 }

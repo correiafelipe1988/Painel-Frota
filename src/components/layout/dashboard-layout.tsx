@@ -26,6 +26,7 @@ import type { NavItem, StatusRapidoItem as StatusRapidoItemType, Motorcycle, Mot
 import { cn } from "@/lib/utils";
 import { subscribeToMotorcycles } from '@/lib/firebase/motorcycleService';
 import { useAuth } from '@/context/AuthContext';
+import { isAuthorizedAdmin } from '@/lib/auth/permissions';
 
 const navItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", subLabel: "Visão geral", icon: LayoutDashboard },
@@ -55,6 +56,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [allMotorcycles, setAllMotorcycles] = useState<Motorcycle[]>([]);
   const [dynamicStatusRapidoItems, setDynamicStatusRapidoItems] = useState<StatusRapidoItemType[]>(initialStatusRapidoItems);
   const [isLoadingStatus, setIsLoadingStatus] = useState(true);
+  
+  // Filtrar itens de navegação baseado nas permissões do usuário
+  const allowedNavItems = navItems.filter(() => isAuthorizedAdmin(user?.uid));
 
   const handleLogout = async () => {
     try {
@@ -178,7 +182,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <div className="p-2">
             <p className="px-2 py-1 text-xs font-semibold text-sidebar-foreground/70">NAVEGAÇÃO</p>
             <SidebarMenu>
-              {navItems.map((item) => (
+              {allowedNavItems.map((item) => (
                 <SidebarMenuItem key={item.label}>
                   <Link href={item.href} legacyBehavior={false}>
                     <SidebarMenuButton

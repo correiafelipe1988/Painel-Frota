@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { AdminProtectedRoute } from "@/components/auth/AdminProtectedRoute";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -346,18 +346,18 @@ export default function DashboardPage() {
   
   if (isLoading || !motorcycleReport || !todayData || !monthData) {
     return (
-      <ProtectedRoute>
+      <AdminProtectedRoute>
         <DashboardLayout>
           <div className="flex justify-center items-center h-screen">
             <p>Carregando dashboard...</p>
           </div>
         </DashboardLayout>
-      </ProtectedRoute>
+      </AdminProtectedRoute>
     );
   }
   
   return (
-    <ProtectedRoute>
+    <AdminProtectedRoute>
       <DashboardLayout>
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-1">
@@ -575,6 +575,6 @@ export default function DashboardPage() {
           </Card>
         </div>
       </DashboardLayout>
-    </ProtectedRoute>
+    </AdminProtectedRoute>
   );
 }

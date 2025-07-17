@@ -1,12 +1,14 @@
 "use client"
 
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
+import { AdminProtectedRoute } from "@/components/auth/AdminProtectedRoute"
 import { MotorcycleProjectionChart } from "@/components/charts/motorcycle-projection-chart"
 import { PageHeader } from "@/components/shared/page-header"
 
 export default function ProjecaoMotosPage() {
   return (
-    <DashboardLayout>
+    <AdminProtectedRoute>
+      <DashboardLayout>
       <div className="space-y-6">
         <PageHeader
           title="Projeção de Locações 2025"
@@ -15,6 +17,7 @@ export default function ProjecaoMotosPage() {
         
         <MotorcycleProjectionChart />
       </div>
-    </DashboardLayout>
+      </DashboardLayout>
+    </AdminProtectedRoute>
   )
 }
