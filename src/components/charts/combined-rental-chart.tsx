@@ -48,7 +48,7 @@ export function CombinedRentalChart({ data }: CombinedRentalChartProps) {
         </Bar>
         <Bar dataKey="relocadas" name="Usada" stackId="a" fill="hsl(142.1 76.2% 36.3%)" radius={[4, 4, 0, 0]}>
            <LabelList dataKey="relocadas" position="center" style={{ fontSize: '14px', fill: 'white', fontWeight: 'bold', textShadow: '0 0 3px rgba(0,0,0,0.8)' }} formatter={formatCount} />
-           <LabelList dataKey="total" position="top" style={{ fontSize: '16px', fill: '#333', fontWeight: 'bold' }} formatter={formatCount} />
+           <LabelList dataKey="total" position="top" style={{ fontSize: '16px', fill: 'hsl(221.2 83.2% 53.3%)', fontWeight: 'bold' }} formatter={formatCount} />
         </Bar>
         
         <Line 
