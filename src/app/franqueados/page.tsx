@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import { AdminProtectedRoute } from "@/components/auth/AdminProtectedRoute";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { RestrictedAccessMessage } from "@/components/auth/RestrictedAccessMessage";
+import { isAuthorizedAdmin } from '@/lib/auth/permissions';
+import { useAuth } from '@/context/AuthContext';
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -95,6 +98,7 @@ const getStatusBadgeProps = (status: string, count: number) => {
 };
 
 export default function FranqueadosPage() {
+  const { user } = useAuth();
   const [allMotorcycles, setAllMotorcycles] = useState<Motorcycle[]>([]);
   const [processedData, setProcessedData] = useState<FranchiseeFleetStatus[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -291,12 +295,22 @@ export default function FranqueadosPage() {
     );
   };
 
+  if (!isAuthorizedAdmin(user?.uid)) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <RestrictedAccessMessage />
+        </DashboardLayout>
+      </ProtectedRoute>
+    );
+  }
+
   return (
-    <AdminProtectedRoute>
+    <ProtectedRoute>
       <DashboardLayout>
       <PageHeader
-        title="Análise de Franqueados"
-        description="Performance e distribuição da frota por franqueado."
+        title="Análise de Unidades Master"
+        description="Performance e distribuição da frota por unidade Master."
         icon={Users}
         iconContainerClassName="bg-primary"
       />
@@ -306,7 +320,7 @@ export default function FranqueadosPage() {
         <Card className="border-l-4 border-l-blue-500">
           <CardContent className="p-4 flex justify-between items-center">
             <div>
-              <p className="text-sm text-muted-foreground font-medium">Total Franqueados</p>
+              <p className="text-sm text-muted-foreground font-medium">Total Unidades Master</p>
               <p className="text-2xl font-bold text-blue-500">{kpis.totalFranqueados}</p>
               <p className="text-xs text-muted-foreground">ativos</p>
             </div>
@@ -369,7 +383,7 @@ export default function FranqueadosPage() {
                 <SelectValue placeholder="Selecione o Franqueado" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos os Franqueados</SelectItem>
+                <SelectItem value="all">Todas as Unidades Master</SelectItem>
                 {franchisees.map(franqueado => (
                   <SelectItem key={franqueado} value={franqueado}>{franqueado}</SelectItem>
                 ))}
@@ -418,7 +432,7 @@ export default function FranqueadosPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 font-headline">
                 <Bike className="h-6 w-6 text-primary" />
-                Status da Frota por Franqueado
+                Status da Frota por Unidades Master
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -426,7 +440,7 @@ export default function FranqueadosPage() {
                 <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-border rounded-lg min-h-[300px] bg-muted/50">
                   <Users className="h-24 w-24 text-muted-foreground mb-4 animate-pulse" />
                   <p className="text-muted-foreground text-center">
-                    Carregando dados dos franqueados...
+                    Carregando dados das unidades Master...
                   </p>
                 </div>
               ) : processedData.length === 0 ? (
@@ -466,25 +480,25 @@ export default function FranqueadosPage() {
                             </div>
                           </TableCell>
                           <TableCell className="text-center">
-                            <Badge {...getStatusBadgeProps('alugada', item.counts.alugada)} />
+                            {item.counts.alugada}
                           </TableCell>
                           <TableCell className="text-center">
-                            <Badge {...getStatusBadgeProps('active', item.counts.active)} />
+                            {item.counts.active}
                           </TableCell>
                           <TableCell className="text-center">
-                            <Badge {...getStatusBadgeProps('manutencao', item.counts.manutencao)} />
+                            {item.counts.manutencao}
                           </TableCell>
                           <TableCell className="text-center">
-                            <Badge {...getStatusBadgeProps('sucata', item.counts.sucata)} />
+                            {item.counts.sucata}
                           </TableCell>
                           <TableCell className="text-center">
-                            <Badge {...getStatusBadgeProps('sinistro', item.counts.sinistro)} />
+                            {item.counts.sinistro}
                           </TableCell>
                           <TableCell className="text-center">
-                            <Badge {...getStatusBadgeProps('nao_transferida', item.counts.nao_transferida)} />
+                            {item.counts.nao_transferida}
                           </TableCell>
                           <TableCell className="text-center">
-                            <Badge {...getStatusBadgeProps('nao_localizada', item.counts.nao_localizada)} />
+                            {item.counts.nao_localizada}
                           </TableCell>
                           <TableCell className="text-center font-bold">{item.totalGeral}</TableCell>
                           <TableCell className="text-center">
@@ -508,7 +522,7 @@ export default function FranqueadosPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 font-headline">
                 <BarChart3 className="h-6 w-6 text-primary" />
-                Performance dos Franqueados (Top 10)
+                Performance das Unidades Master (Top 10)
               </CardTitle>
               <CardDescription>
                 Comparação do desempenho baseado em motos alugadas, disponíveis e em manutenção.
@@ -552,6 +566,6 @@ export default function FranqueadosPage() {
         </TabsContent>
       </Tabs>
       </DashboardLayout>
-    </AdminProtectedRoute>
+    </ProtectedRoute>
   );
 }

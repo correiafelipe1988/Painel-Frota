@@ -2,7 +2,9 @@
 
 import { useAuth } from '@/context/AuthContext';
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import { AdminProtectedRoute } from "@/components/auth/AdminProtectedRoute";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { RestrictedAccessMessage } from "@/components/auth/RestrictedAccessMessage";
+import { isAuthorizedAdmin } from '@/lib/auth/permissions';
 import { BarChart3, CalendarDays, CheckCircle2, Bike, ArrowRight, Wrench } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -37,8 +39,18 @@ export default function HomePage() {
     );
   }
 
+  if (!isAuthorizedAdmin(user?.uid)) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <RestrictedAccessMessage />
+        </DashboardLayout>
+      </ProtectedRoute>
+    );
+  }
+
   return (
-    <AdminProtectedRoute>
+    <ProtectedRoute>
       <DashboardLayout>
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-1">
@@ -118,6 +130,6 @@ export default function HomePage() {
           </p>
         </div>
       </DashboardLayout>
-    </AdminProtectedRoute>
+    </ProtectedRoute>
   );
 }

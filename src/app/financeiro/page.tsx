@@ -24,6 +24,10 @@ import { DRETable } from "@/components/financeiro/dre-table";
 import { MonthlyRevenueChart } from "@/components/charts/monthly-revenue-chart";
 import { RevenueProjectionChart } from "@/components/charts/revenue-projection-chart";
 import { useToast } from "@/hooks/use-toast";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { RestrictedAccessMessage } from "@/components/auth/RestrictedAccessMessage";
+import { isAuthorizedAdmin } from '@/lib/auth/permissions';
+import { useAuth } from '@/context/AuthContext';
 
 const currentYear = new Date().getFullYear();
 const currentMonth = new Date().getMonth() + 1;
@@ -50,6 +54,7 @@ const months = [
 ];
 
 export default function FinanceiroPage() {
+  const { user } = useAuth();
   const [allMotorcycles, setAllMotorcycles] = useState<Motorcycle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedYear, setSelectedYear] = useState<string>(currentYear.toString());
@@ -212,23 +217,36 @@ export default function FinanceiroPage() {
     </div>
   );
 
+  if (!isAuthorizedAdmin(user?.uid)) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <RestrictedAccessMessage />
+        </DashboardLayout>
+      </ProtectedRoute>
+    );
+  }
+
   if (isLoading) {
     return (
-      <DashboardLayout>
-        <PageHeader 
-          title="Dashboard Financeiro" 
-          description="Análise completa da receita e performance financeira" 
-          actions={pageActions} 
-        />
-        <div className="flex justify-center items-center h-96">
-          <p>Carregando dados financeiros...</p>
-        </div>
-      </DashboardLayout>
+      <ProtectedRoute>
+        <DashboardLayout>
+          <PageHeader 
+            title="Dashboard Financeiro" 
+            description="Análise completa da receita e performance financeira" 
+            actions={pageActions} 
+          />
+          <div className="flex justify-center items-center h-96">
+            <p>Carregando dados financeiros...</p>
+          </div>
+        </DashboardLayout>
+      </ProtectedRoute>
     );
   }
 
   return (
-    <DashboardLayout>
+    <ProtectedRoute>
+      <DashboardLayout>
       <PageHeader
         title="Dashboard Financeiro"
         description={selectedMonth === "all" ?
@@ -401,5 +419,6 @@ export default function FinanceiroPage() {
         </Tabs>
       </div>
     </DashboardLayout>
+    </ProtectedRoute>
   );
 }

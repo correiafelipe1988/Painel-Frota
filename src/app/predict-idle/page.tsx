@@ -13,6 +13,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, TrendingUp, Users, Clock, BarChart3, Search, X, PieChart } from "lucide-react";
 import { subscribeToMotorcycles, calculateActiveIdleDays, hasActiveIdleCount } from "@/lib/firebase/motorcycleService";
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { RestrictedAccessMessage } from '@/components/auth/RestrictedAccessMessage';
+import { isAuthorizedAdmin } from '@/lib/auth/permissions';
+import { useAuth } from '@/context/AuthContext';
 import type { Motorcycle } from "@/lib/types";
 import { IdleChartsView } from "@/components/predict-idle/idle-charts-view";
 
@@ -40,6 +44,7 @@ interface MotorcycleWithIdleDays extends Motorcycle {
 }
 
 export default function IdleReportPage() {
+  const { user } = useAuth();
   const [motorcycles, setMotorcycles] = useState<Motorcycle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -244,24 +249,37 @@ export default function IdleReportPage() {
 
   const hasActiveFilters = searchTerm !== '' || statusFilter !== 'all' || franqueadoFilter !== 'all';
 
+  if (!isAuthorizedAdmin(user?.uid)) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <RestrictedAccessMessage />
+        </DashboardLayout>
+      </ProtectedRoute>
+    );
+  }
+
   if (isLoading) {
     return (
-      <DashboardLayout>
-        <PageHeader
-          title="Relatório de Ociosidade"
-          description="Análise completa dos dias ociosos da frota"
-          icon={BarChart3}
-          iconContainerClassName="bg-orange-500"
-        />
-        <div className="flex justify-center items-center h-64">
-          <p>Carregando dados do relatório...</p>
-        </div>
-      </DashboardLayout>
+      <ProtectedRoute>
+        <DashboardLayout>
+          <PageHeader
+            title="Relatório de Ociosidade"
+            description="Análise completa dos dias ociosos da frota"
+            icon={BarChart3}
+            iconContainerClassName="bg-orange-500"
+          />
+          <div className="flex justify-center items-center h-64">
+            <p>Carregando dados do relatório...</p>
+          </div>
+        </DashboardLayout>
+      </ProtectedRoute>
     );
   }
 
   return (
-    <DashboardLayout>
+    <ProtectedRoute>
+      <DashboardLayout>
       <PageHeader
         title="Relatório de Ociosidade"
         description="Análise completa dos dias ociosos da frota"
@@ -571,5 +589,6 @@ export default function IdleReportPage() {
         </TabsContent>
       </Tabs>
     </DashboardLayout>
+    </ProtectedRoute>
   );
 }

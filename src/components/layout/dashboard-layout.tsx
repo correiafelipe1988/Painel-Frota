@@ -32,7 +32,7 @@ const navItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", subLabel: "Visão geral", icon: LayoutDashboard },
   { href: "/motorcycles", label: "Gestão de Motos", subLabel: "Frota completa", icon: ListFilter },
   { href: "/projecao-motos", label: "Projeção de Locações", subLabel: "Meta 300 locações", icon: TrendingUp },
-  { href: "/franqueados", label: "Franqueados", subLabel: "Análise por franqueado", icon: Users },
+  { href: "/franqueados", label: "Unidades Master", subLabel: "Análise por franqueado", icon: Users },
   { href: "/financeiro", label: "Financeiro", subLabel: "Receitas e análises", icon: DollarSign },
   { href: "/predict-idle", label: "Previsão de Ociosidade", subLabel: "IA para tempo ocioso", icon: BarChart3 },
   { href: "/frota", label: "Frota", subLabel: "Análise de modelos", icon: Package },
@@ -58,7 +58,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isLoadingStatus, setIsLoadingStatus] = useState(true);
   
   // Filtrar itens de navegação baseado nas permissões do usuário
-  const allowedNavItems = navItems.filter(() => isAuthorizedAdmin(user?.uid));
+  const allowedNavItems = navItems; // Mostrar todos os itens para usuários autenticados
 
   const handleLogout = async () => {
     try {

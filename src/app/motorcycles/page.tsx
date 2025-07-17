@@ -2,7 +2,10 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import { AdminProtectedRoute } from "@/components/auth/AdminProtectedRoute";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { RestrictedAccessMessage } from "@/components/auth/RestrictedAccessMessage";
+import { isAuthorizedAdmin } from '@/lib/auth/permissions';
+import { useAuth } from '@/context/AuthContext';
 import { PageHeader } from "@/components/shared/page-header";
 import { MotorcycleFilters } from "@/components/motorcycles/motorcycle-filters";
 import { MotorcycleList } from "@/components/motorcycles/motorcycle-list";
@@ -41,6 +44,7 @@ export type MotorcyclePageFilters = {
 };
 
 export default function MotorcyclesPage() {
+  const { user } = useAuth();
   const [filters, setFilters] = useState<MotorcyclePageFilters>({
     status: 'all',
     model: 'all',
@@ -305,9 +309,19 @@ export default function MotorcyclesPage() {
     </>
   );
 
+  if (!isAuthorizedAdmin(user?.uid)) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <RestrictedAccessMessage />
+        </DashboardLayout>
+      </ProtectedRoute>
+    );
+  }
+
   if (isLoading) {
     return (
-      <AdminProtectedRoute>
+      <ProtectedRoute>
         <DashboardLayout>
           <PageHeader
             title="Gestão de Motos"
@@ -319,12 +333,12 @@ export default function MotorcyclesPage() {
             <p>Carregando dados das motocicletas...</p>
           </div>
         </DashboardLayout>
-      </AdminProtectedRoute>
+      </ProtectedRoute>
     );
   }
 
   return (
-    <AdminProtectedRoute>
+    <ProtectedRoute>
       <DashboardLayout>
         <PageHeader
           title="Gestão de Motos"
@@ -355,6 +369,6 @@ export default function MotorcyclesPage() {
           </DialogContent>
         </Dialog>
       </DashboardLayout>
-    </AdminProtectedRoute>
+    </ProtectedRoute>
   );
 }

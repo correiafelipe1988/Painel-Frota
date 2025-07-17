@@ -1,13 +1,27 @@
 "use client"
 
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { AdminProtectedRoute } from "@/components/auth/AdminProtectedRoute"
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { RestrictedAccessMessage } from "@/components/auth/RestrictedAccessMessage";
+import { isAuthorizedAdmin } from '@/lib/auth/permissions';
+import { useAuth } from '@/context/AuthContext';
 import { MotorcycleProjectionChart } from "@/components/charts/motorcycle-projection-chart"
 import { PageHeader } from "@/components/shared/page-header"
 
 export default function ProjecaoMotosPage() {
+  const { user } = useAuth();
+  if (!isAuthorizedAdmin(user?.uid)) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <RestrictedAccessMessage />
+        </DashboardLayout>
+      </ProtectedRoute>
+    );
+  }
+
   return (
-    <AdminProtectedRoute>
+    <ProtectedRoute>
       <DashboardLayout>
       <div className="space-y-6">
         <PageHeader
@@ -18,6 +32,6 @@ export default function ProjecaoMotosPage() {
         <MotorcycleProjectionChart />
       </div>
       </DashboardLayout>
-    </AdminProtectedRoute>
+    </ProtectedRoute>
   )
 }

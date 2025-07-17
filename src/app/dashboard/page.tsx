@@ -3,7 +3,10 @@
 
 import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import { AdminProtectedRoute } from "@/components/auth/AdminProtectedRoute";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { RestrictedAccessMessage } from "@/components/auth/RestrictedAccessMessage";
+import { isAuthorizedAdmin } from '@/lib/auth/permissions';
+import { useAuth } from '@/context/AuthContext';
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -77,7 +80,8 @@ const processMotorcycleData = (motorcycles: Motorcycle[], year: number) => {
         fill: statusColorsForChart[statusKey] || 'hsl(var(--muted-foreground))',
     }));
     
-    const rentalCounts = Array(12).fill(0);
+    const rentalNovasCounts = Array(12).fill(0);
+    const rentalUsadasCounts = Array(12).fill(0);
 
     motorcycles.forEach(moto => {
         if (moto.data_ultima_mov) {
@@ -85,7 +89,13 @@ const processMotorcycleData = (motorcycles: Motorcycle[], year: number) => {
                 const movDate = parseISO(moto.data_ultima_mov);
                 if (isValid(movDate) && getYear(movDate) === year) {
                     const monthIndex = getMonth(movDate);
-                    if (moto.status === 'alugada') rentalCounts[monthIndex]++;
+                    if (moto.status === 'alugada') {
+                        if (moto.type === 'nova') {
+                            rentalNovasCounts[monthIndex]++;
+                        } else if (moto.type === 'usada') {
+                            rentalUsadasCounts[monthIndex]++;
+                        }
+                    }
                 }
             } catch (e) { console.error("Error parsing date for motorcycle charts: ", moto.data_ultima_mov, e); }
         }
@@ -93,8 +103,9 @@ const processMotorcycleData = (motorcycles: Motorcycle[], year: number) => {
 
     const combinedRentalData = monthAbbreviations.map((m, i) => ({
       month: m,
-      alugadas: rentalCounts[i],
-      total: rentalCounts[i],
+      alugadas: rentalNovasCounts[i],
+      relocadas: rentalUsadasCounts[i],
+      total: rentalNovasCounts[i] + rentalUsadasCounts[i],
     }));
 
     const earliestDateByPlaca = new Map<string, Date>();
@@ -154,14 +165,21 @@ const processDailyMotorcycleData = (motorcycles: Motorcycle[]) => {
 
     const dailyRentalData = last30Days.map(date => {
         const dayString = format(date, 'dd/MM');
-        let alugadasCount = 0;
+        let alugadasNovasCount = 0;
+        let alugadasUsadasCount = 0;
 
         motorcycles.forEach(moto => {
             if (moto.data_ultima_mov) {
                 try {
                     const movDate = parseISO(moto.data_ultima_mov);
                     if (isValid(movDate) && isSameDay(startOfDay(movDate), date)) {
-                        if (moto.status === 'alugada') alugadasCount++;
+                        if (moto.status === 'alugada') {
+                            if (moto.type === 'nova') {
+                                alugadasNovasCount++;
+                            } else if (moto.type === 'usada') {
+                                alugadasUsadasCount++;
+                            }
+                        }
                     }
                 } catch (e) {
                     console.error("Error parsing date for daily motorcycle charts: ", moto.data_ultima_mov, e);
@@ -171,8 +189,9 @@ const processDailyMotorcycleData = (motorcycles: Motorcycle[]) => {
 
         return {
             day: dayString,
-            alugadas: alugadasCount,
-            total: alugadasCount,
+            alugadas: alugadasNovasCount,
+            relocadas: alugadasUsadasCount,
+            total: alugadasNovasCount + alugadasUsadasCount,
         };
     });
 
@@ -225,9 +244,9 @@ const processTodayData = (motorcycles: Motorcycle[]) => {
 // Função para processar dados do mês selecionado (movimentações que aconteceram no mês filtrado)
 const processMonthData = (motorcycles: Motorcycle[], selectedMonth: number, selectedYear: number) => {
     let motosDisponiveis = 0;
-    let motosAlugadas = 0;
+    let motosAlugadasNovas = 0;
+    let motosAlugadasUsadas = 0;
     let emManutencao = 0;
-    let motosRelocadas = 0;
     
     // Contar movimentações que aconteceram durante o mês/ano selecionado
     motorcycles.forEach(moto => {
@@ -245,7 +264,11 @@ const processMonthData = (motorcycles: Motorcycle[], selectedMonth: number, sele
                                 motosDisponiveis++;
                                 break;
                             case 'alugada':
-                                motosAlugadas++;
+                                if (moto.type === 'nova') {
+                                    motosAlugadasNovas++;
+                                } else if (moto.type === 'usada') {
+                                    motosAlugadasUsadas++;
+                                }
                                 break;
                             case 'manutencao':
                                 emManutencao++;
@@ -262,9 +285,9 @@ const processMonthData = (motorcycles: Motorcycle[], selectedMonth: number, sele
     
     return {
         motosDisponiveis,
-        motosAlugadas,
+        motosAlugadas: motosAlugadasNovas,
         emManutencao,
-        motosRelocadas: 0 // Não há mais status 'relocada'
+        motosRelocadas: motosAlugadasUsadas // Reutilizando campo para motos usadas
     };
 };
 
@@ -303,6 +326,7 @@ const processStateDistributionData = (motorcycles: Motorcycle[]) => {
 };
 
 export default function DashboardPage() {
+  const { user } = useAuth();
   const [currentTime, setCurrentTime] = useState('');
   const [allMotorcycles, setAllMotorcycles] = useState<Motorcycle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -344,20 +368,30 @@ export default function DashboardPage() {
     };
   }, [selectedMonth, selectedYear]);
   
+  if (!isAuthorizedAdmin(user?.uid)) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <RestrictedAccessMessage />
+        </DashboardLayout>
+      </ProtectedRoute>
+    );
+  }
+
   if (isLoading || !motorcycleReport || !todayData || !monthData) {
     return (
-      <AdminProtectedRoute>
+      <ProtectedRoute>
         <DashboardLayout>
           <div className="flex justify-center items-center h-screen">
             <p>Carregando dashboard...</p>
           </div>
         </DashboardLayout>
-      </AdminProtectedRoute>
+      </ProtectedRoute>
     );
   }
   
   return (
-    <AdminProtectedRoute>
+    <ProtectedRoute>
       <DashboardLayout>
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-1">
@@ -536,7 +570,7 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-2">
                     <MapPin className="h-6 w-6 text-purple-600" />
                     <div>
-                        <CardTitle className="font-headline">Distribuição da Frota por UF</CardTitle>
+                        <CardTitle className="font-headline">Distribuição da Frota - Unidades Master</CardTitle>
                         <CardDescription>Quantidade de motocicletas por estado/região (Top 10).</CardDescription>
                     </div>
                 </div>
@@ -575,6 +609,6 @@ export default function DashboardPage() {
           </Card>
         </div>
       </DashboardLayout>
-    </AdminProtectedRoute>
+    </ProtectedRoute>
   );
 }

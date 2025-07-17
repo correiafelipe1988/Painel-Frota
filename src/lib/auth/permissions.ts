@@ -3,7 +3,8 @@
 
 export const AUTHORIZED_ADMIN_UIDS = [
   "8tCMf5ksCIQGck1bkkYkS4iQDZQ2", // Usuário original
-  "mUnQ1UsIJBTjtwzcfGIF8Lg4jtz1"  // Novo usuário autorizado
+  "mUnQ1UsIJBTjtwzcfGIF8Lg4jtz1", // Novo usuário autorizado
+  "ItKTmShkOQM6B8QoZ9lrVcnZQpI2" // teste@gmail.com
 ];
 
 // Verifica se o usuário tem permissão de administrador completo
@@ -20,12 +21,7 @@ export const PROTECTED_ROUTES = [
   "/projecao-motos",
   "/financeiro",
   "/frota",
-  "/indicadores",
-  "/predict-idle",
-  "/rastreadores", 
-  "/relatorios",
-  "/resumo-franqueado",
-  "/qr-scanner"
+  "/predict-idle"
 ];
 
 // Verifica se uma rota requer permissão especial

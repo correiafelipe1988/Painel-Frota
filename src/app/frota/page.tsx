@@ -14,8 +14,13 @@ import { ModelAnalysisTable } from "@/components/frota/model-analysis-table";
 import { FranchiseeDistributionChart } from "@/components/frota/franchisee-distribution-chart";
 import { ModelPerformanceChart } from "@/components/frota/model-performance-chart";
 import { MaintenanceAnalysis } from "@/components/frota/maintenance-analysis";
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { RestrictedAccessMessage } from '@/components/auth/RestrictedAccessMessage';
+import { isAuthorizedAdmin } from '@/lib/auth/permissions';
+import { useAuth } from '@/context/AuthContext';
 
 export default function FrotaPage() {
+  const { user } = useAuth();
   const [allMotorcycles, setAllMotorcycles] = useState<Motorcycle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -53,24 +58,37 @@ export default function FrotaPage() {
     return Object.values(uniqueByPlaca);
   }, [allMotorcycles]);
 
+  if (!isAuthorizedAdmin(user?.uid)) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <RestrictedAccessMessage />
+        </DashboardLayout>
+      </ProtectedRoute>
+    );
+  }
+
   if (isLoading) {
     return (
-      <DashboardLayout>
-        <PageHeader 
-          title="Análise da Frota" 
-          description="Gestão completa de modelos, performance e manutenção" 
-          icon={Package}
-          iconContainerClassName="bg-blue-600"
-        />
-        <div className="flex justify-center items-center h-96">
-          <p>Carregando dados da frota...</p>
-        </div>
-      </DashboardLayout>
+      <ProtectedRoute>
+        <DashboardLayout>
+          <PageHeader 
+            title="Análise da Frota" 
+            description="Gestão completa de modelos, performance e manutenção" 
+            icon={Package}
+            iconContainerClassName="bg-blue-600"
+          />
+          <div className="flex justify-center items-center h-96">
+            <p>Carregando dados da frota...</p>
+          </div>
+        </DashboardLayout>
+      </ProtectedRoute>
     );
   }
 
   return (
-    <DashboardLayout>
+    <ProtectedRoute>
+      <DashboardLayout>
       <PageHeader
         title="Análise da Frota"
         description="Gestão completa de modelos, performance e manutenção da frota"
@@ -227,5 +245,6 @@ export default function FrotaPage() {
         </Tabs>
       </div>
     </DashboardLayout>
+    </ProtectedRoute>
   );
 }
