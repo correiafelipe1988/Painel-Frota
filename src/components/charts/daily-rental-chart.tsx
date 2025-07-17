@@ -13,7 +13,7 @@ interface DailyRentalChartProps {
   data: ChartDataPoint[] | null;
 }
 
-const formatCount = (value: number) => (value > 0 ? `${value}` : '');
+const formatCount = (value: number) => value > 0 ? `${value}` : '';
 
 export function DailyRentalChart({ data }: DailyRentalChartProps) {
   if (!data || data.every(d => d.total === 0)) {
@@ -51,10 +51,10 @@ export function DailyRentalChart({ data }: DailyRentalChartProps) {
         <Legend verticalAlign="top" wrapperStyle={{top: 0}} />
 
         <Bar dataKey="alugadas" name="Nova" stackId="a" fill="hsl(221.2 83.2% 53.3%)" radius={[0, 0, 0, 0]}>
-           <LabelList dataKey="alugadas" position="center" style={{ fontSize: '10px', fill: 'white', fontWeight: 'bold' }} formatter={formatCount} />
+           <LabelList dataKey="alugadas" position="center" style={{ fontSize: '12px', fill: 'white', fontWeight: 'bold', textShadow: '0 0 3px rgba(0,0,0,0.8)' }} formatter={formatCount} />
         </Bar>
         <Bar dataKey="relocadas" name="Usada" stackId="a" fill="hsl(142.1 76.2% 36.3%)" radius={[4, 4, 0, 0]}>
-           <LabelList dataKey="relocadas" position="center" style={{ fontSize: '10px', fill: 'white', fontWeight: 'bold' }} formatter={formatCount} />
+           <LabelList dataKey="relocadas" position="center" style={{ fontSize: '12px', fill: 'white', fontWeight: 'bold', textShadow: '0 0 3px rgba(0,0,0,0.8)' }} formatter={formatCount} />
         </Bar>
         
         <Line 
