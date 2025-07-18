@@ -4,7 +4,8 @@
 export const AUTHORIZED_ADMIN_UIDS = [
   "8tCMf5ksCIQGck1bkkYkS4iQDZQ2", // Usuário original
   "mUnQ1UsIJBTjtwzcfGIF8Lg4jtz1", // Novo usuário autorizado
-  "ItKTmShkOQM6B8QoZ9lrVcnZQpI2" // teste@gmail.com
+  "ItKTmShkOQM6B8QoZ9lrVcnZQpI2", // teste@gmail.com
+  "uEG78oVNn6P25qem3Kjq4prl97A2" // Usuário autorizado para Dashboard, Gestao de Motos e Frota
 ];
 
 // Verifica se o usuário tem permissão de administrador completo
