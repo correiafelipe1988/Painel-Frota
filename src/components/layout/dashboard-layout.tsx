@@ -57,8 +57,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [dynamicStatusRapidoItems, setDynamicStatusRapidoItems] = useState<StatusRapidoItemType[]>(initialStatusRapidoItems);
   const [isLoadingStatus, setIsLoadingStatus] = useState(true);
   
-  // Filtrar itens de navegação baseado nas permissões do usuário
-  const allowedNavItems = navItems.filter(item => hasRoutePermission(user?.uid, item.href));
+  // Mostrar todos os itens de navegação para usuários autenticados
+  const allowedNavItems = navItems;
 
   const handleLogout = async () => {
     try {
