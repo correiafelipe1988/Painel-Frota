@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { RestrictedAccessMessage } from "@/components/auth/RestrictedAccessMessage";
-import { isAuthorizedAdmin } from '@/lib/auth/permissions';
+import { hasRoutePermission } from '@/lib/auth/permissions';
 import { useAuth } from '@/context/AuthContext';
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { Separator } from "@/components/ui/separator";
@@ -396,7 +396,7 @@ export default function DashboardPage() {
     };
   }, [selectedMonth, selectedYear]);
   
-  if (!isAuthorizedAdmin(user?.uid)) {
+  if (!hasRoutePermission(user?.uid, '/dashboard')) {
     return (
       <ProtectedRoute>
         <DashboardLayout>

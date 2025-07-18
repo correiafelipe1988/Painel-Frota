@@ -16,7 +16,7 @@ import { ModelPerformanceChart } from "@/components/frota/model-performance-char
 import { MaintenanceAnalysis } from "@/components/frota/maintenance-analysis";
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { RestrictedAccessMessage } from '@/components/auth/RestrictedAccessMessage';
-import { isAuthorizedAdmin } from '@/lib/auth/permissions';
+import { hasRoutePermission } from '@/lib/auth/permissions';
 import { useAuth } from '@/context/AuthContext';
 
 export default function FrotaPage() {
@@ -58,7 +58,7 @@ export default function FrotaPage() {
     return Object.values(uniqueByPlaca);
   }, [allMotorcycles]);
 
-  if (!isAuthorizedAdmin(user?.uid)) {
+  if (!hasRoutePermission(user?.uid, '/frota')) {
     return (
       <ProtectedRoute>
         <DashboardLayout>

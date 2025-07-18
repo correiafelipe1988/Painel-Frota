@@ -26,7 +26,7 @@ import type { NavItem, StatusRapidoItem as StatusRapidoItemType, Motorcycle, Mot
 import { cn } from "@/lib/utils";
 import { subscribeToMotorcycles } from '@/lib/firebase/motorcycleService';
 import { useAuth } from '@/context/AuthContext';
-import { isAuthorizedAdmin } from '@/lib/auth/permissions';
+import { isAuthorizedAdmin, hasRoutePermission } from '@/lib/auth/permissions';
 
 const navItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", subLabel: "Visão geral", icon: LayoutDashboard },
@@ -58,7 +58,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isLoadingStatus, setIsLoadingStatus] = useState(true);
   
   // Filtrar itens de navegação baseado nas permissões do usuário
-  const allowedNavItems = navItems; // Mostrar todos os itens para usuários autenticados
+  const allowedNavItems = navItems.filter(item => hasRoutePermission(user?.uid, item.href));
 
   const handleLogout = async () => {
     try {

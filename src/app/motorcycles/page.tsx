@@ -4,7 +4,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { RestrictedAccessMessage } from "@/components/auth/RestrictedAccessMessage";
-import { isAuthorizedAdmin } from '@/lib/auth/permissions';
+import { hasRoutePermission } from '@/lib/auth/permissions';
 import { useAuth } from '@/context/AuthContext';
 import { PageHeader } from "@/components/shared/page-header";
 import { MotorcycleFilters } from "@/components/motorcycles/motorcycle-filters";
@@ -309,7 +309,7 @@ export default function MotorcyclesPage() {
     </>
   );
 
-  if (!isAuthorizedAdmin(user?.uid)) {
+  if (!hasRoutePermission(user?.uid, '/motorcycles')) {
     return (
       <ProtectedRoute>
         <DashboardLayout>
