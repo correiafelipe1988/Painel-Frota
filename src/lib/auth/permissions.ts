@@ -9,8 +9,8 @@ export const AUTHORIZED_ADMIN_UIDS = [
 // Usuários com permissões específicas
 export const SPECIFIC_PERMISSIONS = {
   "uEG78oVNn6P25qem3Kjq4prl97A2": {
-    routes: ["/dashboard", "/motorcycles", "/frota"],
-    description: "Acesso limitado: Dashboard, Gestão de Motos e Frota"
+    routes: ["/dashboard", "/motorcycles", "/frota", "/cadastro-veiculos"],
+    description: "Acesso limitado: Dashboard, Gestão de Motos, Frota e Cadastro Veículos"
   }
 };
 
@@ -41,6 +41,7 @@ export const PROTECTED_ROUTES = [
   "/dashboard",
   "/franqueados", 
   "/motorcycles",
+  "/cadastro-veiculos",
   "/projecao-motos",
   "/financeiro",
   "/frota",

@@ -1,6 +1,80 @@
 export type MotorcycleStatus = 'active' | 'alugada' | 'manutencao' | 'sucata' | 'sinistro' | 'furtada' | 'apropriacao_indebita' | 'nao_transferida' | 'vendida' | 'nao_localizada';
 export type MotorcycleType = 'nova' | 'usada';
 
+// Tipos para o módulo de Cadastro de Veículos
+export type VehicleStatus = 'locada' | 'disponivel' | 'parada' | 'sinistro' | 'sucata';
+export type VehicleType = 'Work' | 'Cargo' | 'Urbana' | 'Sport' | 'Outro';
+export type VehicleFuelType = 'flex' | 'gasolina' | 'etanol' | 'diesel' | 'eletrico';
+export type VehicleOwnershipStatus = 'propria' | 'gerenciada' | 'vendida' | 'distratada';
+export type VehicleOrigin = 'compra' | 'distrato' | 'transferencia';
+export type VehicleDREStatus = 'ativa' | 'inativa' | 'ficticia';
+
+export interface VehicleRegistry {
+  id: string;
+  
+  // 1. Identificação do Veículo
+  placa: string;
+  chassi?: string;
+  renavam?: string;
+  marca?: string;
+  modelo?: string;
+  anoFabricacao?: number;
+  anoModelo?: number;
+  tipo?: VehicleType;
+  corPredominante?: string;
+  tipoCombustivel?: VehicleFuelType;
+  
+  // 2. Situação Documental e Legal
+  statusPropriedade?: VehicleOwnershipStatus;
+  cnpjProprietario?: string;
+  tpvEmitida?: boolean;
+  dataUltimaTransferencia?: string;
+  licenciamentoEmDia?: boolean;
+  seguroAtivo?: boolean | null; // null para "cancelado"
+  multasPendentes?: boolean;
+  valorMultasPendentes?: number;
+  ipvaEmAberto?: boolean;
+  valorIpvaEmAberto?: number;
+  rastreadorAtivo?: boolean;
+  chassiComBaixa?: boolean | null; // null para "em processo"
+  
+  // 3. Localização e Operação
+  cidade?: string;
+  estado?: string;
+  localArmazenamento?: string;
+  funcionarioResponsavel?: string;
+  disponibilidade?: VehicleStatus;
+  locatarioAtual?: string;
+  locatarioCpf?: string;
+  csResponsavel?: string;
+  
+  // 4. Dados Financeiros e Históricos
+  dataAquisicao?: string;
+  origem?: VehicleOrigin;
+  valorAquisicao?: number;
+  receitaTotalGerada?: number;
+  valorTotalMultasPagas?: number;
+  gastosManutencaoAcumulados?: number;
+  statusDre?: VehicleDREStatus;
+  
+  // 5. Observações e Anexos
+  observacoesOperacionais?: string;
+  linkDocumentos?: string;
+  boletimOcorrencia?: boolean | null; // null para "em andamento"
+  dataUltimaVistoria?: string;
+  
+  // Extras
+  codigoSistemaInterno?: string;
+  codigoAsaas?: string;
+  tagRastreamento?: string;
+  
+  // Metadados
+  dataCriacao?: string;
+  dataUltimaAtualizacao?: string;
+  criadoPor?: string;
+  atualizadoPor?: string;
+}
+
 export interface Motorcycle {
   id: string;
   placa?: string;

@@ -21,7 +21,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { LayoutDashboard, ListFilter, Users, BarChart3, Package, MapPin, Wrench, CheckCircle2, XCircle, Bike as SidebarBikeIcon, TrendingUp, LogOut, User, Settings, DollarSign } from "lucide-react";
+import { LayoutDashboard, ListFilter, Users, BarChart3, Package, MapPin, Wrench, CheckCircle2, XCircle, Bike as SidebarBikeIcon, TrendingUp, LogOut, User, Settings, DollarSign, FileText } from "lucide-react";
 import type { NavItem, StatusRapidoItem as StatusRapidoItemType, Motorcycle, MotorcycleStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { subscribeToMotorcycles } from '@/lib/firebase/motorcycleService';
@@ -31,6 +31,7 @@ import { isAuthorizedAdmin, hasRoutePermission } from '@/lib/auth/permissions';
 const navItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", subLabel: "Visão geral", icon: LayoutDashboard },
   { href: "/motorcycles", label: "Gestão de Motos", subLabel: "Frota completa", icon: ListFilter },
+  { href: "/cadastro-veiculos", label: "Cadastro Veículos", subLabel: "Registro completo", icon: FileText },
   { href: "/projecao-motos", label: "Projeção de Locações", subLabel: "Meta 300 locações", icon: TrendingUp },
   { href: "/franqueados", label: "Unidades Master", subLabel: "Análise por franqueado", icon: Users },
   { href: "/financeiro", label: "Financeiro", subLabel: "Receitas e análises", icon: DollarSign },
