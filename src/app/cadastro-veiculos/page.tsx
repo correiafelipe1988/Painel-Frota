@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { FileText, Plus, Search, Filter, Download, Upload, Car, FileCheck, MapPin, DollarSign, MessageSquare } from "lucide-react";
 import type { VehicleRegistry } from "@/lib/types";
 import { VehicleForm } from "@/components/vehicle-registry/vehicle-form";
+import { VehicleDetailsModal } from "@/components/vehicle-registry/vehicle-details-modal";
 import { useToast } from "@/hooks/use-toast";
 import { subscribeToVehicleRegistry, addVehicle, updateVehicle } from "@/lib/firebase/vehicleRegistryService";
 
@@ -29,6 +30,7 @@ export default function CadastroVeiculosPage() {
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleRegistry | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("lista");
 
@@ -133,6 +135,12 @@ export default function CadastroVeiculosPage() {
   const handleEditClick = (vehicle: VehicleRegistry) => {
     setSelectedVehicle(vehicle);
     setShowEditForm(true);
+  };
+
+  // Função para abrir modal de detalhes
+  const handleDetailsClick = (vehicle: VehicleRegistry) => {
+    setSelectedVehicle(vehicle);
+    setShowDetailsModal(true);
   };
 
   if (!hasRoutePermission(user?.uid, '/cadastro-veiculos')) {
@@ -291,7 +299,7 @@ export default function CadastroVeiculosPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => setSelectedVehicle(vehicle)}
+                              onClick={() => handleDetailsClick(vehicle)}
                             >
                               Detalhes
                             </Button>
@@ -342,6 +350,16 @@ export default function CadastroVeiculosPage() {
               />
             </DialogContent>
           </Dialog>
+
+          {/* Modal de detalhes do veículo */}
+          <VehicleDetailsModal
+            vehicle={selectedVehicle}
+            open={showDetailsModal}
+            onOpenChange={(open) => {
+              setShowDetailsModal(open);
+              if (!open) setSelectedVehicle(null);
+            }}
+          />
         </div>
       </DashboardLayout>
     </ProtectedRoute>
