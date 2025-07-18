@@ -97,6 +97,20 @@ export const getVehicleByPlaca = async (placa: string): Promise<VehicleRegistry 
   }
 };
 
+// Função para limpar campos undefined
+const cleanVehicleData = (data: any) => {
+  const cleaned: any = {};
+  
+  Object.keys(data).forEach(key => {
+    const value = data[key];
+    if (value !== undefined && value !== null && value !== '') {
+      cleaned[key] = value;
+    }
+  });
+  
+  return cleaned;
+};
+
 // Adicionar novo veículo
 export const addVehicle = async (
   vehicle: Omit<VehicleRegistry, 'id' | 'dataCriacao' | 'dataUltimaAtualizacao'>,
@@ -111,8 +125,11 @@ export const addVehicle = async (
       throw new Error('Já existe um veículo com esta placa');
     }
     
+    // Limpar dados antes de salvar
+    const cleanedVehicle = cleanVehicleData(vehicle);
+    
     const vehicleData = {
-      ...vehicle,
+      ...cleanedVehicle,
       dataCriacao: serverTimestamp(),
       dataUltimaAtualizacao: serverTimestamp(),
       criadoPor: userId,
@@ -144,8 +161,11 @@ export const updateVehicle = async (
       }
     }
     
+    // Limpar dados antes de atualizar
+    const cleanedUpdates = cleanVehicleData(updates);
+    
     const updateData = {
-      ...updates,
+      ...cleanedUpdates,
       dataUltimaAtualizacao: serverTimestamp(),
       atualizadoPor: userId,
     };
