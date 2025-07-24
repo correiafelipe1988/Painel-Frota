@@ -19,7 +19,7 @@ import type { VehicleRegistry } from "@/lib/types";
 // Schema de validação
 const vehicleFormSchema = z.object({
   // 1. Identificação do Veículo
-  placa: z.string().min(8, "Placa é obrigatória").max(8, "Formato inválido"),
+  placa: z.string().min(1, "Placa é obrigatória").max(7, "Formato inválido").regex(/^[A-Z]{3}[0-9]{4}$/, "Formato deve ser ABC1234"),
   chassi: z.string().optional(),
   renavam: z.string().optional(),
   marca: z.string().optional(),
@@ -54,14 +54,6 @@ const vehicleFormSchema = z.object({
   locatarioCpf: z.string().optional(),
   csResponsavel: z.string().optional(),
   
-  // 4. Dados Financeiros e Históricos
-  dataAquisicao: z.string().optional(),
-  origem: z.enum(["compra", "distrato", "transferencia"]).optional(),
-  valorAquisicao: z.number().min(0).optional(),
-  receitaTotalGerada: z.number().min(0).optional(),
-  valorTotalMultasPagas: z.number().min(0).optional(),
-  gastosManutencaoAcumulados: z.number().min(0).optional(),
-  statusDre: z.enum(["ativa", "inativa", "ficticia"]).optional(),
   
   // 5. Observações e Anexos
   observacoesOperacionais: z.string().optional(),
@@ -90,7 +82,7 @@ export function VehicleForm({ vehicle, onSubmit, onCancel, isLoading }: VehicleF
   const form = useForm<VehicleFormData>({
     resolver: zodResolver(vehicleFormSchema),
     defaultValues: vehicle ? {
-      placa: vehicle.placa,
+      placa: vehicle.placa || "",
       chassi: vehicle.chassi || "",
       renavam: vehicle.renavam || "",
       marca: vehicle.marca || "",
@@ -120,13 +112,6 @@ export function VehicleForm({ vehicle, onSubmit, onCancel, isLoading }: VehicleF
       locatarioAtual: vehicle.locatarioAtual || "",
       locatarioCpf: vehicle.locatarioCpf || "",
       csResponsavel: vehicle.csResponsavel || "",
-      dataAquisicao: vehicle.dataAquisicao || "",
-      origem: vehicle.origem,
-      valorAquisicao: vehicle.valorAquisicao || 0,
-      receitaTotalGerada: vehicle.receitaTotalGerada || 0,
-      valorTotalMultasPagas: vehicle.valorTotalMultasPagas || 0,
-      gastosManutencaoAcumulados: vehicle.gastosManutencaoAcumulados || 0,
-      statusDre: vehicle.statusDre,
       observacoesOperacionais: vehicle.observacoesOperacionais || "",
       linkDocumentos: vehicle.linkDocumentos || "",
       boletimOcorrencia: vehicle.boletimOcorrencia || false,
@@ -134,7 +119,39 @@ export function VehicleForm({ vehicle, onSubmit, onCancel, isLoading }: VehicleF
       codigoSistemaInterno: vehicle.codigoSistemaInterno || "",
       codigoAsaas: vehicle.codigoAsaas || "",
       tagRastreamento: vehicle.tagRastreamento || "",
-    } : {},
+    } : {
+      placa: "",
+      chassi: "",
+      renavam: "",
+      marca: "",
+      modelo: "",
+      corPredominante: "",
+      cnpjProprietario: "",
+      dataUltimaTransferencia: "",
+      tpvEmitida: false,
+      licenciamentoEmDia: false,
+      seguroAtivo: false,
+      multasPendentes: false,
+      valorMultasPendentes: 0,
+      ipvaEmAberto: false,
+      valorIpvaEmAberto: 0,
+      rastreadorAtivo: false,
+      chassiComBaixa: false,
+      cidade: "",
+      estado: "",
+      localArmazenamento: "",
+      funcionarioResponsavel: "",
+      locatarioAtual: "",
+      locatarioCpf: "",
+      csResponsavel: "",
+      observacoesOperacionais: "",
+      linkDocumentos: "",
+      boletimOcorrencia: false,
+      dataUltimaVistoria: "",
+      codigoSistemaInterno: "",
+      codigoAsaas: "",
+      tagRastreamento: "",
+    },
   });
 
   const handleSubmit = async (data: VehicleFormData) => {
@@ -161,7 +178,7 @@ export function VehicleForm({ vehicle, onSubmit, onCancel, isLoading }: VehicleF
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="identificacao" className="flex items-center gap-2">
                   <Car className="h-4 w-4" />
                   Identificação
@@ -173,10 +190,6 @@ export function VehicleForm({ vehicle, onSubmit, onCancel, isLoading }: VehicleF
                 <TabsTrigger value="localizacao" className="flex items-center gap-2">
                   <MapPin className="h-4 w-4" />
                   Localização
-                </TabsTrigger>
-                <TabsTrigger value="financeiro" className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4" />
-                  Financeiro
                 </TabsTrigger>
                 <TabsTrigger value="observacoes" className="flex items-center gap-2">
                   <MessageSquare className="h-4 w-4" />
@@ -194,7 +207,15 @@ export function VehicleForm({ vehicle, onSubmit, onCancel, isLoading }: VehicleF
                       <FormItem>
                         <FormLabel>Placa *</FormLabel>
                         <FormControl>
-                          <Input placeholder="ABC-1234" {...field} />
+                          <Input 
+                            placeholder="ABC1234" 
+                            {...field} 
+                            value={field.value || ''}
+                            onChange={(e) => {
+                              const value = e.target.value.replace('-', '').toUpperCase();
+                              field.onChange(value);
+                            }}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -297,31 +318,6 @@ export function VehicleForm({ vehicle, onSubmit, onCancel, isLoading }: VehicleF
                   
                   <FormField
                     control={form.control}
-                    name="tipo"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Tipo</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione o tipo" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Work">Work</SelectItem>
-                            <SelectItem value="Cargo">Cargo</SelectItem>
-                            <SelectItem value="Urbana">Urbana</SelectItem>
-                            <SelectItem value="Sport">Sport</SelectItem>
-                            <SelectItem value="Outro">Outro</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
                     name="corPredominante"
                     render={({ field }) => (
                       <FormItem>
@@ -329,31 +325,6 @@ export function VehicleForm({ vehicle, onSubmit, onCancel, isLoading }: VehicleF
                         <FormControl>
                           <Input placeholder="Azul" {...field} />
                         </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="tipoCombustivel"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Tipo de Combustível</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione o combustível" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="flex">Flex</SelectItem>
-                            <SelectItem value="gasolina">Gasolina</SelectItem>
-                            <SelectItem value="etanol">Etanol</SelectItem>
-                            <SelectItem value="diesel">Diesel</SelectItem>
-                            <SelectItem value="eletrico">Elétrico</SelectItem>
-                          </SelectContent>
-                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -380,7 +351,7 @@ export function VehicleForm({ vehicle, onSubmit, onCancel, isLoading }: VehicleF
                             <SelectItem value="propria">Própria</SelectItem>
                             <SelectItem value="gerenciada">Gerenciada</SelectItem>
                             <SelectItem value="vendida">Vendida</SelectItem>
-                            <SelectItem value="distratada">Distratada</SelectItem>
+                            <SelectItem value="distratada">Distrato em Andamento</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -699,148 +670,8 @@ export function VehicleForm({ vehicle, onSubmit, onCancel, isLoading }: VehicleF
                 </div>
               </TabsContent>
 
-              {/* 4. Dados Financeiros e Históricos */}
-              <TabsContent value="financeiro" className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="dataAquisicao"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Data de Aquisição</FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="origem"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Origem</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione a origem" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="compra">Compra</SelectItem>
-                            <SelectItem value="distrato">Distrato</SelectItem>
-                            <SelectItem value="transferencia">Transferência</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="statusDre"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Status na DRE</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione o status" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="ativa">Ativa</SelectItem>
-                            <SelectItem value="inativa">Inativa</SelectItem>
-                            <SelectItem value="ficticia">Fictícia</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="valorAquisicao"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Valor de Aquisição</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            placeholder="0,00" 
-                            {...field} 
-                            onChange={(e) => field.onChange(Number(e.target.value))}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="receitaTotalGerada"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Receita Total Gerada</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            placeholder="0,00" 
-                            {...field} 
-                            onChange={(e) => field.onChange(Number(e.target.value))}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="valorTotalMultasPagas"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Valor Total de Multas Pagas</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            placeholder="0,00" 
-                            {...field} 
-                            onChange={(e) => field.onChange(Number(e.target.value))}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="gastosManutencaoAcumulados"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Gastos com Manutenção Acumulados</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            placeholder="0,00" 
-                            {...field} 
-                            onChange={(e) => field.onChange(Number(e.target.value))}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </TabsContent>
 
-              {/* 5. Observações e Anexos */}
+              {/* 4. Observações e Anexos */}
               <TabsContent value="observacoes" className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField

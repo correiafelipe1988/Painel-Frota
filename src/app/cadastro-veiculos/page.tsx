@@ -8,18 +8,24 @@ import { hasRoutePermission } from '@/lib/auth/permissions';
 import { useAuth } from '@/context/AuthContext';
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { FileText, Plus, Search, Filter, Download, Upload, Car, FileCheck, MapPin, DollarSign, MessageSquare } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { FileText, Plus, Search, Filter, Download, Upload, Car, FileCheck, MapPin, MessageSquare, AlertTriangle, CheckCircle, XCircle, Clock, Truck, Zap, Trash2, Bike, MoreHorizontal, Eye, Edit } from "lucide-react";
 import type { VehicleRegistry } from "@/lib/types";
 import { VehicleForm } from "@/components/vehicle-registry/vehicle-form";
 import { VehicleDetailsModal } from "@/components/vehicle-registry/vehicle-details-modal";
 import { useToast } from "@/hooks/use-toast";
-import { subscribeToVehicleRegistry, addVehicle, updateVehicle } from "@/lib/firebase/vehicleRegistryService";
+import { subscribeToVehicleRegistry, addVehicle, updateVehicle, deleteVehicle } from "@/lib/firebase/vehicleRegistryService";
 
 
 export default function CadastroVeiculosPage() {
@@ -32,7 +38,6 @@ export default function CadastroVeiculosPage() {
   const [showEditForm, setShowEditForm] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("lista");
 
   // Carregar veículos do Firebase
   useEffect(() => {
@@ -82,6 +87,76 @@ export default function CadastroVeiculosPage() {
       default:
         return 'N/A';
     }
+  };
+
+  // Função para obter ícone do tipo de veículo
+  const getVehicleTypeIcon = (type?: string) => {
+    switch (type) {
+      case 'Cargo':
+        return <Truck className="h-4 w-4 text-blue-600" />;
+      case 'Sport':
+        return <Zap className="h-4 w-4 text-red-600" />;
+      default:
+        return <Car className="h-4 w-4 text-gray-600" />;
+    }
+  };
+
+  // Função para calcular tempo no status atual
+  const getTimeInStatus = (vehicle: VehicleRegistry) => {
+    if (!vehicle.dataUltimaAtualizacao) return '';
+    
+    const lastUpdate = new Date(vehicle.dataUltimaAtualizacao);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - lastUpdate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) return 'há 1 dia';
+    if (diffDays < 30) return `há ${diffDays} dias`;
+    if (diffDays < 365) return `há ${Math.floor(diffDays / 30)} meses`;
+    return `há ${Math.floor(diffDays / 365)} anos`;
+  };
+
+  // Função para obter status da documentação
+  const getDocumentationStatus = (vehicle: VehicleRegistry) => {
+    const issues = [];
+    if (!vehicle.licenciamentoEmDia) issues.push('Licenciamento vencido');
+    if (vehicle.multasPendentes) issues.push('Multas pendentes');
+    if (vehicle.ipvaEmAberto) issues.push('IPVA em aberto');
+    if (!vehicle.seguroAtivo) issues.push('Seguro inativo');
+    
+    const tooltipText = issues.length > 0 ? issues.join(', ') : 'Toda documentação em dia';
+    
+    if (issues.length === 0) {
+      return { 
+        status: 'ok', 
+        icon: <CheckCircle className="h-4 w-4 text-green-600" />, 
+        text: 'Em dia',
+        tooltip: tooltipText
+      };
+    } else if (issues.length <= 2) {
+      return { 
+        status: 'warning', 
+        icon: <AlertTriangle className="h-4 w-4 text-yellow-600" />, 
+        text: `${issues.length} pendência${issues.length > 1 ? 's' : ''}`,
+        tooltip: tooltipText
+      };
+    } else {
+      return { 
+        status: 'error', 
+        icon: <XCircle className="h-4 w-4 text-red-600" />, 
+        text: `${issues.length} problemas`,
+        tooltip: tooltipText
+      };
+    }
+  };
+
+  // Função para formatar valor monetário
+  const formatCurrency = (value?: number) => {
+    if (!value) return 'R$ 0,00';
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
   };
 
   // Função para salvar novo veículo
@@ -143,6 +218,30 @@ export default function CadastroVeiculosPage() {
     setShowDetailsModal(true);
   };
 
+  // Função para excluir veículo
+  const handleDeleteVehicle = async (vehicle: VehicleRegistry) => {
+    const confirmDelete = window.confirm(`Tem certeza que deseja excluir o veículo ${vehicle.placa?.replace('-', '')}?`);
+    
+    if (!confirmDelete || !user?.uid) return;
+    
+    setIsLoading(true);
+    try {
+      await deleteVehicle(vehicle.id);
+      toast({
+        title: "Sucesso",
+        description: "Veículo excluído com sucesso!"
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: error instanceof Error ? error.message : "Erro ao excluir veículo",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (!hasRoutePermission(user?.uid, '/cadastro-veiculos')) {
     return (
       <ProtectedRoute>
@@ -156,14 +255,15 @@ export default function CadastroVeiculosPage() {
   return (
     <ProtectedRoute>
       <DashboardLayout>
-        <PageHeader
-          title="Cadastro de Veículos"
-          description="Controle completo da frota com documentação e histórico detalhado"
-          icon={FileText}
-          iconContainerClassName="bg-blue-500"
-        />
+        <TooltipProvider>
+          <PageHeader
+            title="Cadastro de Veículos"
+            description="Controle completo da frota com documentação e histórico detalhado"
+            icon={FileText}
+            iconContainerClassName="bg-blue-500"
+          />
 
-        <div className="space-y-6">
+          <div className="space-y-6">
           {/* Barra de ações */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
@@ -207,7 +307,7 @@ export default function CadastroVeiculosPage() {
                     <p className="text-sm text-muted-foreground">Total de Veículos</p>
                     <p className="text-2xl font-bold">{vehicles.length}</p>
                   </div>
-                  <Car className="h-8 w-8 text-blue-500" />
+                  <Bike className="h-8 w-8 text-blue-500" />
                 </div>
               </CardContent>
             </Card>
@@ -230,7 +330,7 @@ export default function CadastroVeiculosPage() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Locadas</p>
+                    <p className="text-sm text-muted-foreground">Alugadas</p>
                     <p className="text-2xl font-bold text-blue-600">
                       {vehicles.filter(v => v.disponibilidade === 'locada').length}
                     </p>
@@ -265,48 +365,160 @@ export default function CadastroVeiculosPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left py-2">Placa</th>
-                      <th className="text-left py-2">Marca/Modelo</th>
-                      <th className="text-left py-2">Ano</th>
-                      <th className="text-left py-2">Tipo</th>
-                      <th className="text-left py-2">Status</th>
-                      <th className="text-left py-2">Localização</th>
-                      <th className="text-left py-2">Ações</th>
+                      <th className="text-left py-3 px-2">Veículo</th>
+                      <th className="text-left py-3 px-2">Documentação</th>
+                      <th className="text-left py-3 px-2">Status Operacional</th>
+                      <th className="text-left py-3 px-2">Obs</th>
+                      <th className="text-left py-3 px-2">Localização</th>
+                      <th className="text-left py-3 px-2">Ações</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredVehicles.map((vehicle) => (
-                      <tr key={vehicle.id} className="border-b hover:bg-gray-50">
-                        <td className="py-3 font-medium">{vehicle.placa}</td>
-                        <td className="py-3">{vehicle.marca} {vehicle.modelo}</td>
-                        <td className="py-3">{vehicle.anoModelo}</td>
-                        <td className="py-3">{vehicle.tipo}</td>
-                        <td className="py-3">
-                          <Badge variant={getStatusBadgeVariant(vehicle.disponibilidade)}>
-                            {getStatusText(vehicle.disponibilidade)}
-                          </Badge>
-                        </td>
-                        <td className="py-3">{vehicle.cidade}, {vehicle.estado}</td>
-                        <td className="py-3">
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEditClick(vehicle)}
-                            >
-                              Editar
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDetailsClick(vehicle)}
-                            >
-                              Detalhes
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                    {filteredVehicles.map((vehicle) => {
+                      const docStatus = getDocumentationStatus(vehicle);
+                      const timeInStatus = getTimeInStatus(vehicle);
+                      
+                      return (
+                        <tr 
+                          key={vehicle.id} 
+                          className={`border-b hover:bg-gray-50 ${
+                            docStatus.status === 'error' ? 'bg-red-50' : 
+                            docStatus.status === 'warning' ? 'bg-yellow-50' : ''
+                          }`}
+                        >
+                          {/* Coluna Veículo */}
+                          <td className="py-3 px-2">
+                            <div className="flex items-start gap-2">
+                              {getVehicleTypeIcon(vehicle.tipo)}
+                              <div>
+                                <div className="font-semibold text-lg">{vehicle.placa?.replace('-', '')}</div>
+                                <div className="text-sm text-gray-600">
+                                  {vehicle.marca} {vehicle.modelo}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {vehicle.anoModelo}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Coluna Documentação */}
+                          <td className="py-3 px-2">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="flex items-center gap-2 cursor-help">
+                                  {docStatus.icon}
+                                  <div>
+                                    <div className={`text-sm font-medium ${
+                                      docStatus.status === 'ok' ? 'text-green-700' :
+                                      docStatus.status === 'warning' ? 'text-yellow-700' :
+                                      'text-red-700'
+                                    }`}>
+                                      {docStatus.text}
+                                    </div>
+                                    {vehicle.multasPendentes && vehicle.valorMultasPendentes && (
+                                      <div className="text-xs text-red-600">
+                                        Multas: {formatCurrency(vehicle.valorMultasPendentes)}
+                                      </div>
+                                    )}
+                                    {vehicle.ipvaEmAberto && vehicle.valorIpvaEmAberto && (
+                                      <div className="text-xs text-red-600">
+                                        IPVA: {formatCurrency(vehicle.valorIpvaEmAberto)}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{docStatus.tooltip}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </td>
+
+                          {/* Coluna Status Operacional */}
+                          <td className="py-3 px-2">
+                            <div>
+                              <Badge variant={getStatusBadgeVariant(vehicle.disponibilidade)}>
+                                {getStatusText(vehicle.disponibilidade)}
+                              </Badge>
+                              {timeInStatus && (
+                                <div className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  {timeInStatus}
+                                </div>
+                              )}
+                              {vehicle.locatarioAtual && (
+                                <div className="text-xs text-blue-600 mt-1">
+                                  {vehicle.locatarioAtual}
+                                </div>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* Coluna Obs */}
+                          <td className="py-3 px-2">
+                            <div>
+                              {vehicle.observacoesOperacionais ? (
+                                <div className="text-sm text-gray-700 max-w-[200px] truncate" title={vehicle.observacoesOperacionais}>
+                                  {vehicle.observacoesOperacionais}
+                                </div>
+                              ) : (
+                                <div className="text-xs text-gray-400">
+                                  Sem observações
+                                </div>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* Coluna Localização */}
+                          <td className="py-3 px-2">
+                            <div>
+                              <div className="text-sm font-medium">
+                                {vehicle.cidade}, {vehicle.estado}
+                              </div>
+                              {vehicle.localArmazenamento && (
+                                <div className="text-xs text-gray-500">
+                                  {vehicle.localArmazenamento}
+                                </div>
+                              )}
+                              {vehicle.funcionarioResponsavel && (
+                                <div className="text-xs text-blue-600">
+                                  Resp: {vehicle.funcionarioResponsavel}
+                                </div>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* Coluna Ações */}
+                          <td className="py-3 px-2">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" disabled={isLoading}>
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => handleDetailsClick(vehicle)}>
+                                  <Eye className="mr-2 h-4 w-4" /> Ver Detalhes
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleEditClick(vehicle)}>
+                                  <Edit className="mr-2 h-4 w-4" /> Editar
+                                </DropdownMenuItem>
+                                
+                                <DropdownMenuSeparator />
+                                
+                                <DropdownMenuItem
+                                  onClick={() => handleDeleteVehicle(vehicle)}
+                                  className="text-destructive hover:!text-destructive focus:!text-destructive !bg-transparent hover:!bg-destructive/10 focus:!bg-destructive/10"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" /> Excluir
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
                 
@@ -360,7 +572,8 @@ export default function CadastroVeiculosPage() {
               if (!open) setSelectedVehicle(null);
             }}
           />
-        </div>
+          </div>
+        </TooltipProvider>
       </DashboardLayout>
     </ProtectedRoute>
   );

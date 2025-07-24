@@ -22,11 +22,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { LayoutDashboard, ListFilter, Users, BarChart3, Package, MapPin, Wrench, CheckCircle2, XCircle, Bike as SidebarBikeIcon, TrendingUp, LogOut, User, Settings, DollarSign, FileText } from "lucide-react";
-import type { NavItem, StatusRapidoItem as StatusRapidoItemType, Motorcycle, MotorcycleStatus } from "@/lib/types";
+import type { NavItem, StatusRapidoItem, Motorcycle, MotorcycleStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { subscribeToMotorcycles } from '@/lib/firebase/motorcycleService';
 import { useAuth } from '@/context/AuthContext';
-import { isAuthorizedAdmin, hasRoutePermission } from '@/lib/auth/permissions';
+import { hasRoutePermission } from '@/lib/auth/permissions';
 
 const navItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", subLabel: "Visão geral", icon: LayoutDashboard },
@@ -39,7 +39,7 @@ const navItems: NavItem[] = [
   { href: "/frota", label: "Frota", subLabel: "Análise de modelos", icon: Package },
 ];
 
-const initialStatusRapidoItems: StatusRapidoItemType[] = [
+const initialStatusRapidoItems: StatusRapidoItem[] = [
   { label: "Total de Motos", subLabel: "Placas únicas", count: 0, bgColor: "bg-slate-100", textColor: "text-slate-700", badgeTextColor: "text-slate-700", icon: Package },
   { label: "Disponíveis", subLabel: "Motos prontas", count: 0, bgColor: "bg-green-100", textColor: "text-green-700", badgeTextColor: "text-green-700", statusKey: 'active', icon: CheckCircle2 },
   { label: "Alugadas", subLabel: "Em uso", count: 0, bgColor: "bg-blue-100", textColor: "text-blue-700", badgeTextColor: "text-blue-700", statusKey: 'alugada', icon: SidebarBikeIcon },
@@ -55,7 +55,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, signOut } = useAuth();
   const [allMotorcycles, setAllMotorcycles] = useState<Motorcycle[]>([]);
-  const [dynamicStatusRapidoItems, setDynamicStatusRapidoItems] = useState<StatusRapidoItemType[]>(initialStatusRapidoItems);
+  const [dynamicStatusRapidoItems, setDynamicStatusRapidoItems] = useState<StatusRapidoItem[]>(initialStatusRapidoItems);
   const [isLoadingStatus, setIsLoadingStatus] = useState(true);
   
   // Mostrar todos os itens de navegação para usuários autenticados

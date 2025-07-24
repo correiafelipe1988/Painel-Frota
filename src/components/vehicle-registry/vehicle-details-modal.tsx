@@ -252,57 +252,8 @@ export function VehicleDetailsModal({ vehicle, open, onOpenChange }: VehicleDeta
             </CardContent>
           </Card>
 
-          {/* 4. Dados Financeiros e Históricos */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <DollarSign className="h-5 w-5" />
-                Dados Financeiros e Históricos
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Data de Aquisição</p>
-                  <p>{formatDate(vehicle.dataAquisicao)}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Origem</p>
-                  <p>{vehicle.origem || "N/A"}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Status na DRE</p>
-                  <p>{vehicle.statusDre || "N/A"}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Valor de Aquisição</p>
-                  <p className="text-lg font-semibold text-green-600">
-                    {formatCurrency(vehicle.valorAquisicao)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Receita Total Gerada</p>
-                  <p className="text-lg font-semibold text-green-600">
-                    {formatCurrency(vehicle.receitaTotalGerada)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Multas Pagas</p>
-                  <p className="text-lg font-semibold text-red-600">
-                    {formatCurrency(vehicle.valorTotalMultasPagas)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Gastos Manutenção</p>
-                  <p className="text-lg font-semibold text-orange-600">
-                    {formatCurrency(vehicle.gastosManutencaoAcumulados)}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
-          {/* 5. Observações e Anexos */}
+          {/* 4. Observações e Anexos */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
